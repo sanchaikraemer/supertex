@@ -17,7 +17,7 @@
 <header class="cab">
   <div class="cab-in">
     <img src="icones/logo-supertex.png" alt="Supertex" class="cab-logo">
-    <h1>Acompanhamento da Concreteira<small>Painel da obra · Construtora Senger · versão 0003</small></h1>
+    <h1>Acompanhamento da Concreteira<small>Painel da obra · Construtora Senger · versão 0004</small></h1>
     <button id="instalar" class="sec oculto">Instalar app</button>
   </div>
 </header>
@@ -28,7 +28,7 @@
   <div class="card">
     <div class="drop" id="drop">
       <b>Arraste aqui a conversa exportada do WhatsApp</b> (.zip ou .txt) — ou clique para escolher<br>
-      <span style="font-size:12px">No WhatsApp: abra o grupo → ⋮ → Mais → Exportar conversa → Sem mídia (ou com mídia)</span>
+      <span style="font-size:12px">No WhatsApp: abra o grupo → ⋮ → Mais → Exportar conversa → Incluir mídia (para transcrever os áudios) ou Sem mídia</span>
       <input type="file" id="arq" accept=".zip,.txt" class="oculto">
     </div>
     <div class="barra" style="margin-top:12px">
@@ -41,6 +41,16 @@
       <button id="aplicar">Atualizar</button>
       <button id="apagar" class="sec oculto">Apagar conversa</button>
     </div>
+    <details class="transc">
+      <summary>Transcrição dos áudios (OpenAI)</summary>
+      <div class="barra">
+        <label class="largo">Chave da OpenAI (fica guardada só neste aparelho)
+          <input id="chave" type="password" autocomplete="off" placeholder="sk-..."></label>
+        <button id="salvarChave">Salvar chave</button>
+        <button id="tirarChave" class="sec oculto">Remover chave</button>
+      </div>
+      <p class="leg" id="chaveInfo"></p>
+    </details>
   </div>
 
   <div class="kpis" id="kpis"></div>
@@ -59,7 +69,7 @@
     <div id="a-ocorr" class="oculto"></div>
     <div id="a-nfs" class="oculto"></div>
   </div>
-  <p class="leg">Espera = hora que a obra pediu a carga → hora que o caminhão saiu da usina (anunciado no grupo). Áudios e fotos não são lidos automaticamente; aparecem listados nas Ocorrências.</p>
+  <p class="leg">Espera = hora que a obra pediu a carga → hora que o caminhão saiu da usina (anunciado no grupo). Com a chave da OpenAI salva, os áudios são transcritos sozinhos e aparecem nas Ocorrências; fotos não são lidas.</p>
 </div>
 
 <script src="js/analise.js"></script>

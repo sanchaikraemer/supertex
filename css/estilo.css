@@ -46,4 +46,9 @@ pre.resumo{white-space:pre-wrap;background:var(--soft);padding:12px;border-radiu
 .abas{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .abas button{background:transparent;color:var(--tx);border-color:var(--ln);font-weight:500;border-radius:8px;text-transform:none;letter-spacing:normal;padding:7px 10px}
 .abas button.at{background:transparent;color:var(--tx);border-color:var(--ouro);box-shadow:inset 0 -3px 0 var(--ouro)}
+.transc{margin-top:12px;border-top:1px solid var(--ln);padding-top:10px}
+.transc summary{cursor:pointer;color:var(--mut);font-size:13px}
+.transc .barra{margin-top:8px}
+.largo{flex:1;min-width:220px}
+.aviso-audio{background:var(--soft);border-radius:8px;padding:10px 12px;margin:0 0 10px}
 .oculto{display:none}
