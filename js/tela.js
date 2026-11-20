@@ -216,8 +216,9 @@ function render(){
   $('#kpis').innerHTML=[
     [fmt(vol)+' m³','Concreto entregue'],[cargas.length,'Cargas (caminhões)'],[diasConc.length,'Dias com concretagem'],
     [duracao(media),'Espera média pedido → saída'],[atras.length,'Cargas com espera > '+lim+' min'],[maior?duracao(maior.espera):'—','Maior espera'+(maior?' ('+maior.data.slice(0,5)+')':'')],
-    ...(temRegra?[[reais(taxaAbaixo),`Taxa estimada: ${abaixo.length} carga(s) abaixo de ${fmt(regra.min)} m³`]]:[]),
-    ...(vMedio&&vol?[[reais(vMedio.medio),`Valor médio do m³ (preço médio do contrato${temRegra?' + taxa':''})`]]:[])
+    ...(vMedio&&vol?[[reais(vMedio.conc),`Valor do concreto (${fmt(vol)} m³ × ${reais(vMedio.preco)}, preço médio)`]]:[]),
+    ...(temRegra?[[reais(taxaAbaixo),`Excedente: ${fmt(m3Falta)} m³ faltantes em ${abaixo.length} carga(s) abaixo de ${fmt(regra.min)} m³`]]:[]),
+    ...(vMedio&&vol?[[reais(vMedio.tot),`Total da compra (concreto${temRegra?' + excedente':''})`],[reais(vMedio.medio),`Valor médio do m³${temRegra?' com excedente':''}`]]:[])
   ].map(([v,l])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
 
   // ---------- RELATÓRIO ----------
