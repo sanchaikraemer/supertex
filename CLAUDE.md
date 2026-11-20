@@ -26,9 +26,9 @@ Sanchai (comercial da Construtora Senger). **Não é programador.** Explique tud
 - `exemplos/` — conversas reais para teste (fora do Git).
 
 ## Versão
-O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0010`).
+O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0011`).
 **Toda vez que uma mudança for colocada no link, aumentar 1** (0003 → 0004 → 0005...), sempre com 4 dígitos.
-O link do manifesto no `index.html` leva o mesmo número (`manifest.webmanifest?v=0010`), para o celular nunca pegar a ficha antiga do app.
+O link do manifesto no `index.html` leva o mesmo número (`manifest.webmanifest?v=0011`), para o celular nunca pegar a ficha antiga do app.
 
 ## Como a leitura funciona (js/analise.js)
 - Mensagem nova = linha que começa com `dd/mm/aaaa hh:mm - Nome: texto`. Linhas seguintes continuam a mesma mensagem.
@@ -51,6 +51,8 @@ O link do manifesto no `index.html` leva o mesmo número (`manifest.webmanifest?
   (localStorage). **Nunca colocar valores do contrato no repositório** (é público). Marca "falta X" na aba Cargas, soma nos números e no relatório.
   Preços do concreto por fck (campo "fck:preço, fck:preço"): o Relatório mostra o valor estimado (m³ × preço + taxa)
   para cada fck e para o preço médio entre eles, e os números mostram o valor médio do m³. Também só no aparelho.
+  Aba **Custos**: regra, preços por fck, exemplo de carga de 6 m³, consumo de 20 m³ (mínimo de caminhões × um a mais)
+  e calculadora de volume/caminhões — tudo calculado com os valores salvos no aparelho.
   Tudo pode ser salvo por um **link de configuração**: endereço do app terminado em `#carga=X&taxa=Y&fck=F:P,F:P`
   (o Sanchai manda esse link à equipe pelo WhatsApp; o link com os valores **não** vai para o repositório).
 - Fotos não são lidas; aparecem nas Ocorrências como "ouvir/ver no celular".
