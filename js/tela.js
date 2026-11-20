@@ -99,7 +99,7 @@ $('#apagar').onclick=()=>{if(confirm('Apagar a conversa guardada neste aparelho?
 $('#salvarChave').onclick=()=>{const v=$('#chave').value.trim();if(!v)return;Chave.salvar(v);$('#chave').value='';ERRO_TRANSC='';mostrarChave();render();};
 $('#tirarChave').onclick=()=>{Chave.salvar('');mostrarChave();render();};
 mostrarChave();
-// --- regra do contrato: carga abaixo do mínimo. Os valores são digitados na página e ficam SÓ neste aparelho (nunca no GitHub). ---
+// --- regra do contrato: carga mínima, taxa e preços por fck. Padrão no código (CONTRATO_PADRAO); o aparelho pode sobrepor. ---
 // Valores do contrato com a Supertex (decisão do Sanchai em 20/11/2026: ficam no código e aparecem sozinhos;
 // o repositório é público, então qualquer um pode ver). O que for salvo no aparelho (campos ou link) tem prioridade.
 const CONTRATO_PADRAO={min:8,taxa:192.5,precos:[[20,668],[25,685],[30,700],[35,728],[40,749]]};
@@ -115,7 +115,7 @@ const lerPrecos=t=>String(t||'').split(/[;\s]+|,(?=\s*\d+\s*[:=])/).map(x=>x.spl
   .map(([f,p])=>[+f.replace(',','.'),+p.replace(',','.')]).filter(([f,p])=>f>0&&p>0);
 const textoPrecos=l=>(l||[]).map(([f,p])=>`${fmt(f)}:${String(p).replace('.',',')}`).join(', ');
 // Link de configuração: endereço terminado em #carga=X&taxa=Y&fck=F:P,F:P salva a regra neste aparelho e some do endereço.
-// (o que vem depois do "#" não é enviado ao servidor; os valores nunca ficam no código)
+// (o que vem depois do "#" não é enviado ao servidor)
 // Salva a regra a partir do texto do link (o que vem depois do "#"). Devolve o resumo do que foi salvo, ou '' se não reconheceu.
 function salvarConfig(txt){const i=String(txt||'').indexOf('#'),h=new URLSearchParams(i>=0?txt.slice(i+1):String(txt||'').trim());
  if(!(h.has('carga')||h.has('taxa')||h.has('fck')))return '';
@@ -199,26 +199,41 @@ function render(){
   const regra=Contrato.ler(),temRegra=regra.min>0&&regra.taxa>0;
   const abaixo=temRegra?cargas.filter(c=>c.vol<regra.min):[];
   const m3Falta=abaixo.reduce((s,c)=>s+(regra.min-c.vol),0),taxaAbaixo=m3Falta*(regra.taxa||0);
-  // Valor estimado do concreto: m³ × preço de cada fck do contrato (e do preço médio entre eles) + taxa das cargas abaixo do mínimo.
+  // Gasto: cada carga pelo preço do fck dela (lido no pedido, na mensagem da carga ou no último fck citado no dia);
+  // sem fck identificado, usa o preço médio dos fck do contrato. Mais o excedente das cargas abaixo do mínimo.
   const precos=regra.precos||[],precoMedio=precos.length?precos.reduce((s,p)=>s+p[1],0)/precos.length:0;
-  const valorCom=(rotulo,preco)=>{const conc=vol*preco,tot=conc+taxaAbaixo;return {rotulo,preco,conc,tot,medio:vol?tot/vol:0};};
-  const valores=precos.length?[...precos.map(([f,p])=>valorCom('fck '+fmt(f),p)),valorCom('Preço médio',precoMedio)]:[];
-  const vMedio=valores[valores.length-1];
-  if(temRegra&&vol){const pm=vMedio||valorCom('Preço médio',0);
+  const RX_FCK=/fck\s*[:=]?\s*(\d{2})\b/i,COD_FCK={84305:20,84307:25,84308:30,84309:35,84310:40,84317:30};
+  const fckDe=t=>{t=String(t||'');const m=t.match(RX_FCK);if(m)return +m[1];const k=t.match(/\b(843(?:05|07|08|09|10|17))\b/);return k?COD_FCK[k[1]]:null;};
+  const pedidoDe=new Map(R.pedidos.filter(p=>p.atendido).map(p=>[p.atendido,p])),msgsDia={};
+  R.msgs.forEach(m=>{(msgsDia[m.chave]=msgsDia[m.chave]||[]).push(m);});
+  R.cargas.forEach(c=>{const dia=msgsDia[c.chave]||[],p=pedidoDe.get(c);let f=p?fckDe(p.texto):null;
+    if(!f){const mc=dia.find(m=>m.min===c.aviso&&m.texto.includes(c.nf));f=mc?fckDe(mc.texto):null;}
+    if(!f){const ant=dia.filter(m=>m.min<=c.aviso).map(m=>fckDe(m.texto)).filter(Boolean);f=ant.length?ant[ant.length-1]:null;}
+    c.fck=precos.some(x=>x[0]===f)?f:null;});
+  const precoDe=c=>c.fck?precos.find(x=>x[0]===c.fck)[1]:precoMedio;
+  const valorConc=cargas.reduce((s,c)=>s+c.vol*precoDe(c),0),gasto=valorConc+taxaAbaixo,semFck=cargas.filter(c=>!c.fck).length;
+  const grupos={};cargas.forEach(c=>{const k=c.fck||0;(grupos[k]=grupos[k]||{n:0,vol:0}).n++;grupos[k].vol+=c.vol;});
+  const porFck=Object.keys(grupos).map(Number).sort((a,b)=>(a||99)-(b||99)).map(k=>{const g=grupos[k],pr=k?precos.find(x=>x[0]===k)[1]:precoMedio;
+    return {rotulo:k?'fck '+k:'fck não identificado (preço médio)',preco:pr,n:g.n,vol:g.vol,valor:g.vol*pr};});
+  const temValor=precos.length&&vol;
+  const tabelaGasto=()=>`<div class="scroll"><table><tr><th>Concreto</th><th class="n">Cargas</th><th class="n">m³</th><th class="n pc">R$/m³</th><th class="n">Valor</th></tr>
+    ${porFck.map(g=>`<tr><td>${g.rotulo}</td><td class="n">${g.n}</td><td class="n">${fmt(g.vol)}</td><td class="n pc">${reais(g.preco)}</td><td class="n">${reais(g.valor)}</td></tr>`).join('')}
+    ${temRegra?`<tr><td>Excedente (cargas abaixo de ${fmt(regra.min)} m³)</td><td class="n">${abaixo.length}</td><td class="n">${fmt(m3Falta)}</td><td class="n pc">${reais(regra.taxa)}</td><td class="n">${reais(taxaAbaixo)}</td></tr>`:''}
+    <tr class="destaque"><td>Gasto até agora</td><td class="n">${cargas.length}</td><td class="n">${fmt(vol)}</td><td class="n pc">${reais(vol?gasto/vol:0)}</td><td class="n">${reais(gasto)}</td></tr></table></div>`;
+  if(temValor){
     $('#custosConversa').innerHTML=`<p style="margin:0 0 8px;font-weight:600">Compra de ${dias[0]?.data.slice(0,5)||'—'} a ${dias[dias.length-1]?.data.slice(0,5)||'—'}: ${fmt(vol)} m³ em ${cargas.length} cargas</p>
     <div class="kpis" style="margin-bottom:6px">
-      ${vMedio?`<div class="kpi"><div class="v">${reais(vMedio.tot)}</div><div class="l">Total da compra (preço médio ${reais(vMedio.preco)}/m³ + taxa)</div></div>`:''}
-      <div class="kpi"><div class="v">${reais(taxaAbaixo)}</div><div class="l">Taxa: ${abaixo.length} de ${cargas.length} cargas abaixo de ${fmt(regra.min)} m³ (faltaram ${fmt(m3Falta)} m³)</div></div>
-      ${vMedio?`<div class="kpi"><div class="v">${reais(vMedio.medio)}</div><div class="l">Quanto saiu o m³ (com a taxa)</div></div>`:''}
-    </div>`;}
-  if(valores.length&&vol)$('#custosObra').innerHTML=`<p class="leg" style="margin:10px 0 4px">Total por fck (a conversa não diz o fck de cada carga):</p><div class="scroll"><table><tr><th>Concreto</th><th class="n">R$/m³</th><th class="n">Total da obra</th><th class="n">m³ sai por</th></tr>
-    ${valores.map(v=>linhaCusto(v.rotulo,[reais(v.preco),[reais(v.tot),'forte'],reais(v.medio)])).join('')}</table></div>`;
+      <div class="kpi"><div class="v">${reais(gasto)}</div><div class="l">Gasto até agora (concreto + excedente)</div></div>
+      ${temRegra?`<div class="kpi"><div class="v">${reais(taxaAbaixo)}</div><div class="l">Excedente: ${abaixo.length} de ${cargas.length} cargas abaixo de ${fmt(regra.min)} m³ (faltaram ${fmt(m3Falta)} m³)</div></div>`:''}
+      <div class="kpi"><div class="v">${reais(gasto/vol)}</div><div class="l">Quanto saiu o m³ (com o excedente)</div></div>
+    </div>`;
+    $('#custosObra').innerHTML=`<p class="leg" style="margin:10px 0 4px">Por fck (lido no pedido ou na mensagem de cada carga${semFck?`; ${semFck} carga(s) sem fck usaram o preço médio`:''}):</p>`+tabelaGasto();}
   $('#kpis').innerHTML=[
     [fmt(vol)+' m³','Concreto entregue'],[cargas.length,'Cargas (caminhões)'],[diasConc.length,'Dias com concretagem'],
     [duracao(media),'Espera média pedido → saída'],[atras.length,'Cargas com espera > '+lim+' min'],[maior?duracao(maior.espera):'—','Maior espera'+(maior?' ('+maior.data.slice(0,5)+')':'')],
-    ...(vMedio&&vol?[[reais(vMedio.conc),`Valor do concreto (${fmt(vol)} m³ × ${reais(vMedio.preco)}, preço médio)`]]:[]),
+    ...(temValor?[[reais(valorConc),`Valor do concreto (${fmt(vol)} m³ pelo fck de cada carga${semFck?`; ${semFck} sem fck: preço médio`:''})`]]:[]),
     ...(temRegra?[[reais(taxaAbaixo),`Excedente: ${fmt(m3Falta)} m³ faltantes em ${abaixo.length} carga(s) abaixo de ${fmt(regra.min)} m³`]]:[]),
-    ...(vMedio&&vol?[[reais(vMedio.tot),`Total da compra (concreto${temRegra?' + excedente':''})`],[reais(vMedio.medio),`Valor médio do m³${temRegra?' com excedente':''}`]]:[])
+    ...(temValor?[[reais(gasto),`Gasto até agora (concreto${temRegra?' + excedente':''})`],[reais(gasto/vol),`Valor médio do m³${temRegra?' com excedente':''}`]]:[])
   ].map(([v,l])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
 
   // ---------- RELATÓRIO ----------
@@ -246,8 +261,10 @@ function render(){
     ...(linhasAtr.length?['',`ESPERAS ACIMA DE ${lim} MIN`,...linhasAtr]:[]),
     ...(naoAt.length?['','PEDIDOS NÃO ENVIADOS (cancelados/segurados pela obra)',...naoAt.map(p=>`• ${p.data.slice(0,5)} ${p.hora} – ${fmt(p.vol)} m³`)]:[]),
     ...(abaixo.length?['',`CARGAS ABAIXO DE ${fmt(regra.min)} m³ (taxa do contrato)`,`• ${abaixo.length} carga(s), faltaram ${fmt(m3Falta)} m³ no total – taxa estimada ${reais(taxaAbaixo)}`]:[]),
-    ...(valores.length&&vol?['',`VALOR ESTIMADO (preços do contrato${temRegra?`, já com a taxa das cargas abaixo de ${fmt(regra.min)} m³`:''})`,
-      ...valores.map(v=>`• ${v.rotulo} (${reais(v.preco)}/m³): total ${reais(v.tot)} – média ${reais(v.medio)}/m³`)]:[]),
+    ...(temValor?['','GASTO ATÉ AGORA (preços do contrato)',
+      ...porFck.map(g=>`• ${g.rotulo}: ${g.n} carga(s), ${fmt(g.vol)} m³ × ${reais(g.preco)} = ${reais(g.valor)}`),
+      ...(temRegra?[`• Excedente: ${fmt(m3Falta)} m³ faltantes em ${abaixo.length} carga(s) abaixo de ${fmt(regra.min)} m³ × ${reais(regra.taxa)} = ${reais(taxaAbaixo)}`]:[]),
+      `• TOTAL: ${reais(gasto)} (${reais(gasto/vol)} por m³)`]:[]),
     ...(alertasNF.length?['','CONFERIR',...alertasNF.map(c=>`• NF ${c.nf} (${c.data.slice(0,5)}, ${c.ordem}ª carga) fora da sequência – possível erro de digitação`)]:[]),
   ].join('\n');
 
@@ -258,10 +275,7 @@ function render(){
       <div style="margin-top:8px;display:flex;gap:8px;align-items:center"><button id="copiar">Copiar texto</button><span id="okc" class="leg"></span></div></div>
       <div><h2>m³ por dia</h2><div class="barras">${diasConc.map(d=>{const v=d.cargas.reduce((s,c)=>s+c.vol,0);
         return `<div class="br"><span>${d.data.slice(0,5)} ${semana(d.chave)}</span><div class="f" style="width:${v/porDiaMax*100}%"></div><span>${fmt(v)} m³</span></div>`}).join('')}</div>
-      ${valores.length&&vol?`<h2 style="margin-top:20px">Valor estimado (preços do contrato)</h2>
-      <p class="leg" style="margin-top:-6px">${fmt(vol)} m³${temRegra?` · taxa das cargas abaixo de ${fmt(regra.min)} m³ incluída: ${reais(taxaAbaixo)}`:''}</p>
-      <table><tr><th>Concreto</th><th class="n">R$/m³</th><th class="n pc">Só concreto</th><th class="n">Total</th><th class="n">Média/m³</th></tr>
-      ${valores.map(v=>`<tr${v.rotulo==='Preço médio'?' class="destaque"':''}><td>${v.rotulo}</td><td class="n">${reais(v.preco)}</td><td class="n pc">${reais(v.conc)}</td><td class="n">${reais(v.tot)}</td><td class="n">${reais(v.medio)}</td></tr>`).join('')}</table>`:''}
+      ${temValor?`<h2 style="margin-top:20px">Gasto até agora</h2>${tabelaGasto()}`:''}
       <h2 style="margin-top:20px">Quem mais falou no grupo</h2>
       <table>${Object.entries(R.participantes).sort((a,b)=>b[1]-a[1]).map(([q,n])=>`<tr><td>${esc(q)} ${termos.some(t=>q.toLowerCase().includes(t.toLowerCase()))?'<span class="tag t-mut">obra</span>':''}</td><td class="n">${n}</td></tr>`).join('')}</table></div>
     </div>`;
@@ -279,11 +293,11 @@ function render(){
       <td class="n">${duracao(m)}</td><td class="n">${mx!=null?`<span class="tag ${mx>lim?'t-bad':'t-ok'}">${duracao(mx)}</span>`:'—'}</td><td class="pc" style="font-size:12px">${obs}</td></tr>`}).join('')}</table></div>`;
 
   // ---------- CARGAS ----------
-  $('#a-cargas').innerHTML=`<div class="scroll"><table><tr><th>Dia</th><th class="n">Nº</th><th class="n">m³</th><th class="pc">BT</th><th class="pc">NF</th><th class="n pc">Pedido</th><th class="n">Saída</th><th class="n">Espera</th></tr>
-    ${cargas.map(c=>`<tr><td>${c.data.slice(0,5)}</td><td class="n">${c.ordem}ª</td><td class="n">${fmt(c.vol)}${c.volPedido&&c.volPedido!==c.vol?` <span class="tag t-warn">pedido ${fmt(c.volPedido)}</span>`:''}${temRegra&&c.vol<regra.min?` <span class="tag t-bad" title="Abaixo da carga mínima do contrato">falta ${fmt(regra.min-c.vol)}</span>`:''}</td><td class="pc">${esc(c.bt)}</td>
+  $('#a-cargas').innerHTML=`<div class="scroll"><table><tr><th>Dia</th><th class="n">Nº</th><th class="n">fck</th><th class="n">m³</th><th class="pc">BT</th><th class="pc">NF</th><th class="n pc">Pedido</th><th class="n">Saída</th><th class="n">Espera</th></tr>
+    ${cargas.map(c=>`<tr><td>${c.data.slice(0,5)}</td><td class="n">${c.ordem}ª</td><td class="n">${c.fck||'—'}</td><td class="n">${fmt(c.vol)}${c.volPedido&&c.volPedido!==c.vol?` <span class="tag t-warn">pedido ${fmt(c.volPedido)}</span>`:''}${temRegra&&c.vol<regra.min?` <span class="tag t-bad" title="Abaixo da carga mínima do contrato">falta ${fmt(regra.min-c.vol)}</span>`:''}</td><td class="pc">${esc(c.bt)}</td>
     <td class="pc">${esc(c.nf)}${c.alertaNF?' <span class="tag t-warn">conferir</span>':''}</td><td class="n pc">${hhmm(c.pedido)}</td><td class="n">${hhmm(c.saida)}</td>
     <td class="n">${c.espera==null?'—':`<span class="tag ${c.espera>lim?'t-bad':c.espera>lim*0.75?'t-warn':'t-ok'}">${duracao(c.espera)}</span>`}</td></tr>`).join('')}
-    <tr><th colspan="2">Total</th><th class="n">${fmt(vol)}</th><th colspan="5">${cargas.length} cargas</th></tr></table></div>
+    <tr><th colspan="3">Total</th><th class="n">${fmt(vol)}</th><th colspan="5">${cargas.length} cargas</th></tr></table></div>
     ${naoAt.length?`<h2 style="margin-top:16px">Pedidos que não saíram</h2><table>${naoAt.map(p=>`<tr><td>${p.data.slice(0,5)} ${p.hora}</td><td>${fmt(p.vol)} m³</td><td>${esc(p.quem)}</td><td><span class="tag t-mut">${p.cancelado?'cancelado/segurado pela obra':'sem carga anunciada'}</span></td></tr>`).join('')}</table>`:''}`;
 
   // ---------- OCORRÊNCIAS ----------
