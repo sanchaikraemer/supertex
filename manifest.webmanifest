@@ -17,7 +17,7 @@
       "files": [
         {
           "name": "arquivos",
-          "accept": ["application/zip", "application/x-zip-compressed", "application/octet-stream", "text/plain", "audio/*", "image/*", "video/*", "*/*", ".zip", ".txt", ".opus"]
+          "accept": ["application/zip", "application/x-zip-compressed", "application/octet-stream", "text/plain", "audio/*", "image/*", "video/*", "*/*"]
         }
       ]
     }
