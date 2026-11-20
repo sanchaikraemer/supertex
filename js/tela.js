@@ -25,6 +25,14 @@ async function lerZip(buf){
   }
   throw new Error('nenhum .txt dentro do zip');
 }
+// --- guarda a última conversa importada neste aparelho (só sai ao clicar em "Apagar conversa") ---
+const Guarda={
+  banco(){return new Promise((ok,erro)=>{const r=indexedDB.open('concreteira',1);r.onupgradeneeded=()=>r.result.createObjectStore('conversa');r.onsuccess=()=>ok(r.result);r.onerror=()=>erro(r.error);});},
+  async usar(modo,fazer){const db=await this.banco();return new Promise((ok,erro)=>{const t=db.transaction('conversa',modo);const r=fazer(t.objectStore('conversa'));t.oncomplete=()=>ok(r.result);t.onerror=()=>erro(t.error);});},
+  salvar(d){return this.usar('readwrite',s=>s.put(d,'ultima'));},
+  ler(){return this.usar('readonly',s=>s.get('ultima'));},
+  apagar(){return this.usar('readwrite',s=>s.delete('ultima'));},
+};
 async function abrir(f){
   try{
     let nome=f.name,texto;
@@ -32,6 +40,7 @@ async function abrir(f){
     else texto=await f.text();
     TEXTO=texto;NOME=nome.replace(/\.(txt|zip)$/i,'').replace(/^Conversa do WhatsApp com /i,'');
     $('#de').value='';$('#ate').value='';render();
+    Guarda.salvar({texto:TEXTO,nome:NOME}).then(()=>$('#apagar').classList.remove('oculto')).catch(()=>{});
   }catch(e){$('#nomeGrupo').textContent='Não consegui ler o arquivo: '+e.message;}
 }
 const drop=$('#drop');
@@ -41,6 +50,7 @@ drop.ondragover=e=>{e.preventDefault();drop.classList.add('on')};
 drop.ondragleave=()=>drop.classList.remove('on');
 drop.ondrop=e=>{e.preventDefault();drop.classList.remove('on');e.dataTransfer.files[0]&&abrir(e.dataTransfer.files[0])};
 $('#aplicar').onclick=render;
+$('#apagar').onclick=()=>{if(confirm('Apagar a conversa guardada neste aparelho?'))Guarda.apagar().catch(()=>{}).finally(()=>location.reload());};
 document.querySelectorAll('#abas button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#abas button').forEach(x=>x.classList.toggle('at',x===b));
   ['resumo','dias','cargas','ocorr','nfs'].forEach(a=>$('#a-'+a).classList.toggle('oculto',a!==b.dataset.a));
@@ -150,4 +160,5 @@ function render(){
     <div><h2>Caminhões (BT) usados</h2><table><tr><th>BT</th><th class="n">Viagens</th><th class="n">m³</th></tr>
     ${Object.entries(bts).sort((a,b)=>b[1].n-a[1].n).map(([b,x])=>`<tr><td>${esc(b)}</td><td class="n">${x.n}</td><td class="n">${fmt(x.v)}</td></tr>`).join('')}</table></div></div>`;
 }
-render();
+// Ao abrir a página: volta a última conversa guardada, se tiver.
+Guarda.ler().then(d=>{if(d&&d.texto){TEXTO=d.texto;NOME=d.nome||'';$('#apagar').classList.remove('oculto');}}).catch(()=>{}).finally(render);
