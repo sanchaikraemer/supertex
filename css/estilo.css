@@ -1,9 +1,14 @@
 /* Layout e componentes. Cores vêm de tema.css */
 *{box-sizing:border-box}
-body{margin:0;font-family:var(--fonte);background:var(--bg);color:var(--tx);font-size:14px;line-height:1.45;border-top:6px solid var(--ac2)}
+body{margin:0;font-family:var(--fonte);background:var(--bg);color:var(--tx);font-size:14px;line-height:1.45}
 .wrap{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
-h1{font-size:22px;margin:0 0 2px;color:var(--tit)}
-.topo{display:flex;justify-content:space-between;align-items:center;gap:8px 16px;flex-wrap:wrap}
+.cab{background:var(--cab);border-bottom:1px solid var(--ln)}
+.cab-in{max-width:1100px;margin:0 auto;padding:16px;display:flex;align-items:center;gap:12px 18px;flex-wrap:wrap}
+.cab-logo{height:42px;display:block}
+h1{font-size:20px;margin:0;line-height:1.2;color:var(--tit);border-left:1px solid var(--ln);padding-left:18px}
+h1 small{display:block;font-size:12px;font-weight:500;color:var(--mut)}
+.cab .sec{margin-left:auto}
+@media (max-width:600px){h1{border-left:0;padding-left:0}}
 h2{font-size:16px;margin:0 0 12px}
 .sub{color:var(--mut);margin:0 0 16px}
 .card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:16px;margin-bottom:16px}
@@ -15,7 +20,7 @@ button.sec{background:transparent;color:var(--ac)}
 .drop{border:2px dashed var(--ln);border-radius:12px;padding:18px;text-align:center;color:var(--mut);cursor:pointer}
 .drop.on{border-color:var(--ac);background:var(--soft)}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
-.kpi{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:12px 14px}
+.kpi{background:var(--card);border:1px solid var(--ln);border-left:3px solid var(--ac);border-radius:12px;padding:12px 14px}
 .kpi .v{font-size:24px;font-weight:700}
 .kpi .l{font-size:12px;color:var(--mut)}
 table{width:100%;border-collapse:collapse;font-size:13px}
