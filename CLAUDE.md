@@ -26,7 +26,7 @@ Sanchai (comercial da Construtora Senger). **Não é programador.** Explique tud
 - `exemplos/` — conversas reais para teste (fora do Git).
 
 ## Versão
-O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0004`).
+O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0005`).
 **Toda vez que uma mudança for colocada no link, aumentar 1** (0003 → 0004 → 0005...), sempre com 4 dígitos.
 
 ## Como a leitura funciona (js/analise.js)
@@ -50,6 +50,9 @@ O número da versão aparece sempre no topo da página (`index.html`, no subtít
 - Áudios: se a conversa foi exportada **com mídia** (.zip) e há chave da OpenAI salva na página (campo "Transcrição dos áudios",
   guardada só no aparelho, **nunca no repositório**), `js/tela.js` transcreve sozinho e mostra o texto nas Ocorrências.
   O texto transcrito **não entra** no cálculo do relatório (decisão do Sanchai).
+- Como a conversa entra: arrastar/escolher o .zip, ou os arquivos extraídos juntos (.txt + áudios), ou
+  **compartilhar direto do WhatsApp** para o app instalado no Android ("share_target" no `manifest.webmanifest`;
+  o `sw.js` recebe em `./compartilhar` e abre a página com `?compartilhado=1`).
 
 ## Teste de referência
 Com `exemplos/hotel-senger.txt` (grupo O.STEX - CRZ | HOTEL - SENGER, de 03/11 a 19/11/2026) o resultado tem que ser:
