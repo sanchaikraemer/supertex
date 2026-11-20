@@ -196,7 +196,6 @@ function render(){
   const termos=$('#obra').value.split(',').map(s=>s.trim()).filter(Boolean);
   const lim=+$('#limite').value||60;
   const R=Analise.analisar(TEXTO,termos);
-  $('#resumoObra').classList.add('oculto');
   if(!R.msgs.length){$('#nomeGrupo').textContent=TEXTO?'Arquivo sem mensagens reconhecidas.':'Nenhuma conversa carregada ainda — arraste o arquivo exportado do grupo no quadro abaixo.';return;}
   const de=$('#de').value.replace(/-/g,''),ate=$('#ate').value.replace(/-/g,'');
   const dentro=ch=>(!de||ch>=de)&&(!ate||ch<=ate);
@@ -250,20 +249,20 @@ function render(){
       <div class="kpi"><div class="v">${reais(gasto/vol)}</div><div class="l">Quanto saiu o m³ (com o excedente)</div></div>
     </div>`;
     $('#custosObra').innerHTML=`<p class="leg" style="margin:10px 0 4px">Por fck (lido no pedido ou na mensagem de cada carga${semFck?`; ${semFck} carga(s) sem fck usaram o preço médio`:''}):</p>`+tabelaGasto();}
-  // ---------- RESUMO (quadro no topo) ----------
+  // ---------- RESUMO (no topo da aba Relatório) ----------
+  let resumoHTML='';
   {const porDiaVol={};cargas.forEach(c=>{porDiaVol[c.chave]=(porDiaVol[c.chave]||0)+c.vol;});
    // excedente se cada dia fosse pedido em caminhões cheios (um caminhão não junta concreto de dias diferentes)
    const taxaIdeal=temRegra?Object.values(porDiaVol).reduce((s,v)=>s+(Math.ceil(v/regra.min)*regra.min-v)*regra.taxa,0):0;
    const economia=Math.max(0,taxaAbaixo-taxaIdeal),nfConf=cargas.filter(c=>c.alertaNF).map(c=>c.nf);
    const conferir=[naoAt.length&&`${naoAt.length} pedido(s) que não saíram`,nfConf.length&&`NF ${nfConf.join(', ')} fora da sequência`,temValor&&semFck&&`${semFck} carga(s) sem fck (usado o preço médio)`].filter(Boolean);
-   $('#resumoObra').innerHTML=`<h2>Resumo</h2><ul>
+   resumoHTML=`<div class="resumo-obra"><h2>Resumo</h2><ul>
      <li><b>${fmt(vol)} m³</b> em <b>${cargas.length} cargas</b> · ${diasConc.length} dias com concretagem (${dias[0]?.data.slice(0,5)||'—'} a ${dias[dias.length-1]?.data.slice(0,5)||'—'})</li>
      <li>Espera média <b>${duracao(media)}</b> · <b>${atras.length}</b> carga(s) acima de ${lim} min${maior?` · maior <b>${duracao(maior.espera)}</b> (${maior.data.slice(0,5)})`:''}</li>
      ${temValor?`<li>Gasto até agora <b>${reais(gasto)}</b> (${reais(gasto/vol)}/m³): concreto ${reais(valorConc)}${temRegra?` + excedente ${reais(taxaAbaixo)}`:''}</li>`:''}
      ${temRegra?`<li><b>${abaixo.length} de ${cargas.length}</b> cargas abaixo de ${fmt(regra.min)} m³.${economia>0?` Pedindo caminhões de ${fmt(regra.min)} m³, o excedente cairia para ${reais(taxaIdeal)}: <b>economia de ${reais(economia)}</b>.`:abaixo.length?' Cada dia já usou o mínimo de caminhões possível; o excedente vem do volume do dia não fechar em múltiplos de '+fmt(regra.min)+' m³.':''}</li>`:''}
      ${conferir.length?`<li>Conferir: ${conferir.join(' · ')}</li>`:''}
-   </ul>`;
-   $('#resumoObra').classList.remove('oculto');}
+   </ul></div>`;}
   $('#kpis').innerHTML=[
     [fmt(vol)+' m³','Concreto entregue'],[cargas.length,'Cargas (caminhões)'],[diasConc.length,'Dias com concretagem'],
     [duracao(media),'Espera média pedido → saída'],[atras.length,'Cargas com espera > '+lim+' min'],[maior?duracao(maior.espera):'—','Maior espera'+(maior?' ('+maior.data.slice(0,5)+')':'')],
@@ -305,7 +304,7 @@ function render(){
   ].join('\n');
 
   const porDiaMax=Math.max(1,...diasConc.map(d=>d.cargas.reduce((s,c)=>s+c.vol,0)));
-  $('#a-resumo').innerHTML=`
+  $('#a-resumo').innerHTML=resumoHTML+`
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
       <div><h2>Resumo pronto para enviar</h2><pre class="resumo" id="txtResumo">${esc(resumo)}</pre>
       <div style="margin-top:8px;display:flex;gap:8px;align-items:center"><button id="copiar">Copiar texto</button><span id="okc" class="leg"></span></div></div>

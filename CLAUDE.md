@@ -26,9 +26,9 @@ Sanchai (comercial da Construtora Senger). **Não é programador.** Explique tud
 - `exemplos/` — conversas reais para teste (fora do Git).
 
 ## Versão
-O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0019`).
+O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0020`).
 **Toda vez que uma mudança for colocada no link, aumentar 1** (0003 → 0004 → 0005...), sempre com 4 dígitos.
-Os links do manifesto e de **todos** os css/js no `index.html` levam o mesmo número (`?v=0019`): ao subir versão, trocar todos.
+Os links do manifesto e de **todos** os css/js no `index.html` levam o mesmo número (`?v=0020`): ao subir versão, trocar todos.
 Assim o navegador nunca mistura arquivo novo com arquivo velho (isso já quebrou a página uma vez). O `sw.js` também confere
 sempre com o servidor os arquivos do próprio app.
 
@@ -60,7 +60,7 @@ sempre com o servidor os arquivos do próprio app.
 - **Várias obras**: cada conversa importada é guardada como uma obra (nome do grupo do WhatsApp) no IndexedDB
   (`obra:<nome>` + `atual`). Lista "Obra" no topo troca entre elas; importar o mesmo grupo de novo atualiza a obra.
   "Apagar esta obra" apaga só a obra aberta. A regra do contrato vale igual para todas as obras.
-- Quadro **Resumo** no topo (acima dos números): entregue, esperas, gasto, cargas abaixo do mínimo com a economia possível
+- Quadro **Resumo** no topo da aba **Relatório** (o Sanchai não quer na tela inicial): entregue, esperas, gasto, cargas abaixo do mínimo com a economia possível
   (calculada **dia a dia**: um caminhão não junta concreto de dias diferentes) e o que conferir.
   Aba **Custos** (enxuta, a pedido do Sanchai): uma linha com o resultado da obra (m³, cargas abaixo do mínimo, m³ que faltou,
   taxa), uma linha com a regra, tabela do valor da obra por fck (R$/m³, total com taxa, m³ sai por) e o simulador
