@@ -99,6 +99,14 @@ $('#apagar').onclick=()=>{if(confirm('Apagar a conversa guardada neste aparelho?
 $('#salvarChave').onclick=()=>{const v=$('#chave').value.trim();if(!v)return;Chave.salvar(v);$('#chave').value='';ERRO_TRANSC='';mostrarChave();render();};
 $('#tirarChave').onclick=()=>{Chave.salvar('');mostrarChave();render();};
 mostrarChave();
+// --- regra do contrato: carga abaixo do mínimo. Os valores são digitados na página e ficam SÓ neste aparelho (nunca no GitHub). ---
+const Contrato={
+  ler(){try{return JSON.parse(localStorage.getItem('contratoCargaMin')||'null')||{}}catch(e){return {}}},
+  salvar(o){try{localStorage.setItem('contratoCargaMin',JSON.stringify(o))}catch(e){}},
+};
+const reais=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+{const r=Contrato.ler();if(r.min)$('#cMin').value=r.min;if(r.taxa)$('#cTaxa').value=r.taxa;}
+$('#salvarContrato').onclick=()=>{Contrato.salvar({min:+$('#cMin').value||0,taxa:+$('#cTaxa').value||0});render();};
 document.querySelectorAll('#abas button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#abas button').forEach(x=>x.classList.toggle('at',x===b));
   ['resumo','dias','cargas','ocorr','nfs'].forEach(a=>$('#a-'+a).classList.toggle('oculto',a!==b.dataset.a));
@@ -129,9 +137,13 @@ function render(){
   const diasSem=dias.filter(d=>!d.cargas.length&&d.cancel.length+d.ocorr.length>0);
   const naoAt=pedidos.filter(p=>!p.atendido);
 
+  const regra=Contrato.ler(),temRegra=regra.min>0&&regra.taxa>0;
+  const abaixo=temRegra?cargas.filter(c=>c.vol<regra.min):[];
+  const m3Falta=abaixo.reduce((s,c)=>s+(regra.min-c.vol),0),taxaAbaixo=m3Falta*(regra.taxa||0);
   $('#kpis').innerHTML=[
     [fmt(vol)+' m³','Concreto entregue'],[cargas.length,'Cargas (caminhões)'],[diasConc.length,'Dias com concretagem'],
-    [duracao(media),'Espera média pedido → saída'],[atras.length,'Cargas com espera > '+lim+' min'],[maior?duracao(maior.espera):'—','Maior espera'+(maior?' ('+maior.data.slice(0,5)+')':'')]
+    [duracao(media),'Espera média pedido → saída'],[atras.length,'Cargas com espera > '+lim+' min'],[maior?duracao(maior.espera):'—','Maior espera'+(maior?' ('+maior.data.slice(0,5)+')':'')],
+    ...(temRegra?[[reais(taxaAbaixo),`Taxa estimada: ${abaixo.length} carga(s) abaixo de ${fmt(regra.min)} m³`]]:[])
   ].map(([v,l])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
 
   // ---------- RELATÓRIO ----------
@@ -158,6 +170,7 @@ function render(){
     ...(linhasSem.length?['','DIAS SEM CONCRETAGEM',...linhasSem]:[]),
     ...(linhasAtr.length?['',`ESPERAS ACIMA DE ${lim} MIN`,...linhasAtr]:[]),
     ...(naoAt.length?['','PEDIDOS NÃO ENVIADOS (cancelados/segurados pela obra)',...naoAt.map(p=>`• ${p.data.slice(0,5)} ${p.hora} – ${fmt(p.vol)} m³`)]:[]),
+    ...(abaixo.length?['',`CARGAS ABAIXO DE ${fmt(regra.min)} m³ (taxa do contrato)`,`• ${abaixo.length} carga(s), faltaram ${fmt(m3Falta)} m³ no total – taxa estimada ${reais(taxaAbaixo)}`]:[]),
     ...(alertasNF.length?['','CONFERIR',...alertasNF.map(c=>`• NF ${c.nf} (${c.data.slice(0,5)}, ${c.ordem}ª carga) fora da sequência – possível erro de digitação`)]:[]),
   ].join('\n');
 
@@ -186,7 +199,7 @@ function render(){
 
   // ---------- CARGAS ----------
   $('#a-cargas').innerHTML=`<div class="scroll"><table><tr><th>Dia</th><th class="n">Nº</th><th class="n">m³</th><th class="pc">BT</th><th class="pc">NF</th><th class="n pc">Pedido</th><th class="n">Saída</th><th class="n">Espera</th></tr>
-    ${cargas.map(c=>`<tr><td>${c.data.slice(0,5)}</td><td class="n">${c.ordem}ª</td><td class="n">${fmt(c.vol)}${c.volPedido&&c.volPedido!==c.vol?` <span class="tag t-warn">pedido ${fmt(c.volPedido)}</span>`:''}</td><td class="pc">${esc(c.bt)}</td>
+    ${cargas.map(c=>`<tr><td>${c.data.slice(0,5)}</td><td class="n">${c.ordem}ª</td><td class="n">${fmt(c.vol)}${c.volPedido&&c.volPedido!==c.vol?` <span class="tag t-warn">pedido ${fmt(c.volPedido)}</span>`:''}${temRegra&&c.vol<regra.min?` <span class="tag t-bad" title="Abaixo da carga mínima do contrato">falta ${fmt(regra.min-c.vol)}</span>`:''}</td><td class="pc">${esc(c.bt)}</td>
     <td class="pc">${esc(c.nf)}${c.alertaNF?' <span class="tag t-warn">conferir</span>':''}</td><td class="n pc">${hhmm(c.pedido)}</td><td class="n">${hhmm(c.saida)}</td>
     <td class="n">${c.espera==null?'—':`<span class="tag ${c.espera>lim?'t-bad':c.espera>lim*0.75?'t-warn':'t-ok'}">${duracao(c.espera)}</span>`}</td></tr>`).join('')}
     <tr><th colspan="2">Total</th><th class="n">${fmt(vol)}</th><th colspan="5">${cargas.length} cargas</th></tr></table></div>
