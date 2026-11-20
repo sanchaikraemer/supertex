@@ -100,8 +100,13 @@ $('#salvarChave').onclick=()=>{const v=$('#chave').value.trim();if(!v)return;Cha
 $('#tirarChave').onclick=()=>{Chave.salvar('');mostrarChave();render();};
 mostrarChave();
 // --- regra do contrato: carga abaixo do mínimo. Os valores são digitados na página e ficam SÓ neste aparelho (nunca no GitHub). ---
+// Valores do contrato com a Supertex (decisão do Sanchai em 20/11/2026: ficam no código e aparecem sozinhos;
+// o repositório é público, então qualquer um pode ver). O que for salvo no aparelho (campos ou link) tem prioridade.
+const CONTRATO_PADRAO={min:8,taxa:192.5,precos:[[20,668],[25,685],[30,700],[35,728],[40,749]]};
 const Contrato={
-  ler(){try{return JSON.parse(localStorage.getItem('contratoCargaMin')||'null')||{}}catch(e){return {}}},
+  ler(){let s={};try{s=JSON.parse(localStorage.getItem('contratoCargaMin')||'null')||{}}catch(e){}
+    return {min:s.min>0?s.min:CONTRATO_PADRAO.min,taxa:s.taxa>0?s.taxa:CONTRATO_PADRAO.taxa,
+      precos:s.precos&&s.precos.length?s.precos:CONTRATO_PADRAO.precos};},
   salvar(o){try{localStorage.setItem('contratoCargaMin',JSON.stringify(o))}catch(e){}},
 };
 const reais=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
@@ -199,8 +204,14 @@ function render(){
   const valorCom=(rotulo,preco)=>{const conc=vol*preco,tot=conc+taxaAbaixo;return {rotulo,preco,conc,tot,medio:vol?tot/vol:0};};
   const valores=precos.length?[...precos.map(([f,p])=>valorCom('fck '+fmt(f),p)),valorCom('Preço médio',precoMedio)]:[];
   const vMedio=valores[valores.length-1];
-  if(temRegra)$('#custosConversa').textContent=`Obra (${dias[0]?.data.slice(0,5)||'—'} a ${dias[dias.length-1]?.data.slice(0,5)||'—'}): ${fmt(vol)} m³ em ${cargas.length} cargas · ${abaixo.length} abaixo de ${fmt(regra.min)} m³ · faltaram ${fmt(m3Falta)} m³ · taxa ${reais(taxaAbaixo)}`;
-  if(valores.length&&vol)$('#custosObra').innerHTML=`<div class="scroll"><table><tr><th>Concreto</th><th class="n">R$/m³</th><th class="n">Total da obra</th><th class="n">m³ sai por</th></tr>
+  if(temRegra&&vol){const pm=vMedio||valorCom('Preço médio',0);
+    $('#custosConversa').innerHTML=`<p style="margin:0 0 8px;font-weight:600">Compra de ${dias[0]?.data.slice(0,5)||'—'} a ${dias[dias.length-1]?.data.slice(0,5)||'—'}: ${fmt(vol)} m³ em ${cargas.length} cargas</p>
+    <div class="kpis" style="margin-bottom:6px">
+      ${vMedio?`<div class="kpi"><div class="v">${reais(vMedio.tot)}</div><div class="l">Total da compra (preço médio ${reais(vMedio.preco)}/m³ + taxa)</div></div>`:''}
+      <div class="kpi"><div class="v">${reais(taxaAbaixo)}</div><div class="l">Taxa: ${abaixo.length} de ${cargas.length} cargas abaixo de ${fmt(regra.min)} m³ (faltaram ${fmt(m3Falta)} m³)</div></div>
+      ${vMedio?`<div class="kpi"><div class="v">${reais(vMedio.medio)}</div><div class="l">Quanto saiu o m³ (com a taxa)</div></div>`:''}
+    </div>`;}
+  if(valores.length&&vol)$('#custosObra').innerHTML=`<p class="leg" style="margin:10px 0 4px">Total por fck (a conversa não diz o fck de cada carga):</p><div class="scroll"><table><tr><th>Concreto</th><th class="n">R$/m³</th><th class="n">Total da obra</th><th class="n">m³ sai por</th></tr>
     ${valores.map(v=>linhaCusto(v.rotulo,[reais(v.preco),[reais(v.tot),'forte'],reais(v.medio)])).join('')}</table></div>`;
   $('#kpis').innerHTML=[
     [fmt(vol)+' m³','Concreto entregue'],[cargas.length,'Cargas (caminhões)'],[diasConc.length,'Dias com concretagem'],
