@@ -26,9 +26,9 @@ Sanchai (comercial da Construtora Senger). **Não é programador.** Explique tud
 - `exemplos/` — conversas reais para teste (fora do Git).
 
 ## Versão
-O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0020`).
+O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0021`).
 **Toda vez que uma mudança for colocada no link, aumentar 1** (0003 → 0004 → 0005...), sempre com 4 dígitos.
-Os links do manifesto e de **todos** os css/js no `index.html` levam o mesmo número (`?v=0020`): ao subir versão, trocar todos.
+Os links do manifesto e de **todos** os css/js no `index.html` levam o mesmo número (`?v=0021`): ao subir versão, trocar todos.
 Assim o navegador nunca mistura arquivo novo com arquivo velho (isso já quebrou a página uma vez). O `sw.js` também confere
 sempre com o servidor os arquivos do próprio app.
 
@@ -56,7 +56,8 @@ sempre com o servidor os arquivos do próprio app.
   Marca "falta X" na aba Cargas. **Gasto até agora** = cada carga × preço do fck dela + excedente. O fck de cada carga é lido
   (em `js/tela.js`, sem mexer em `analise.js`) no pedido ligado à carga, senão na mensagem da carga, senão no último "fck NN"
   ou código de produto do contrato (843xx) citado no grupo naquele dia; sem fck, usa o preço médio dos fck e avisa.
-  Aparece nos números do topo, no Relatório (tabela e texto), na aba Cargas (coluna fck) e na aba Custos.
+  Chamado de **Faturamento total**: quadro em destaque acima dos números (pedido do Sanchai); também no Relatório (tabela e
+  texto), na aba Cargas (coluna fck) e na aba Custos.
 - **Várias obras**: cada conversa importada é guardada como uma obra (nome do grupo do WhatsApp) no IndexedDB
   (`obra:<nome>` + `atual`). Lista "Obra" no topo troca entre elas; importar o mesmo grupo de novo atualiza a obra.
   "Apagar esta obra" apaga só a obra aberta. A regra do contrato vale igual para todas as obras.
