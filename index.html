@@ -6,7 +6,7 @@
 <title>Acompanhamento da Concreteira</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="manifest" href="manifest.webmanifest?v=0007">
+<link rel="manifest" href="manifest.webmanifest?v=0008">
 <link rel="icon" href="icones/icone-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="Concreteira">
@@ -17,7 +17,7 @@
 <header class="cab">
   <div class="cab-in">
     <img src="icones/logo-supertex.png" alt="Supertex" class="cab-logo">
-    <h1>Acompanhamento da Concreteira<small>Painel da obra · Construtora Senger · versão 0007</small></h1>
+    <h1>Acompanhamento da Concreteira<small>Painel da obra · Construtora Senger · versão 0008</small></h1>
     <button id="instalar" class="sec oculto">Instalar app</button>
   </div>
 </header>
@@ -53,6 +53,15 @@
         <button id="tirarChave" class="sec oculto">Remover chave</button>
       </div>
       <p class="leg" id="chaveInfo"></p>
+    </details>
+    <details class="transc">
+      <summary>Regra do contrato: carga mínima (fica só neste aparelho)</summary>
+      <div class="barra">
+        <label>Carga mínima (m³)<input id="cMin" type="number" step="0.5" min="0" class="curto"></label>
+        <label>Taxa por m³ que falta (R$)<input id="cTaxa" type="number" step="0.01" min="0" class="curto"></label>
+        <button id="salvarContrato">Salvar</button>
+      </div>
+      <p class="leg">Cargas menores que o mínimo ficam marcadas ("falta 2") e a taxa estimada aparece nos números e no relatório. Deixe vazio para desligar.</p>
     </details>
    </details>
   </div>
