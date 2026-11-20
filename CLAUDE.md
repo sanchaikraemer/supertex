@@ -25,6 +25,10 @@ Sanchai (comercial da Construtora Senger). **Não é programador.** Explique tud
 - `identidade/IDENTIDADE_SUPERTEX.md` — referência da marca.
 - `exemplos/` — conversas reais para teste (fora do Git).
 
+## Versão
+O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0003`).
+**Toda vez que uma mudança for colocada no link, aumentar 1** (0003 → 0004 → 0005...), sempre com 4 dígitos.
+
 ## Como a leitura funciona (js/analise.js)
 - Mensagem nova = linha que começa com `dd/mm/aaaa hh:mm - Nome: texto`. Linhas seguintes continuam a mesma mensagem.
 - **Lado da obra**: quem tem no nome um dos termos do campo "Quem é da obra" (padrão: `Senger, Sanchai, Você`). O resto é concreteira.
