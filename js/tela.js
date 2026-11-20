@@ -151,27 +151,8 @@ function renderCustos(){
   $('#custosSemRegra').classList.toggle('oculto',!!B);$('#custosConteudo').classList.toggle('oculto',!B);
   if(!B){const r=Contrato.ler(),f=[!(r.min>0)&&'a carga mínima',!(r.taxa>0)&&'a taxa',!(r.precos&&r.precos.length)&&'os preços por fck'].filter(Boolean);
     $('#custosFalta').textContent=`Este aparelho ainda não tem ${f.join(', ').replace(/, ([^,]*)$/,' e $1')} do contrato.`;return;}
-  const {r,media,linhas,custo}=B,camMin=v=>Math.ceil(v/r.min);
-  const c6=custo(6,1,0);
-  const n20=camMin(20),a20=custo(20,n20,0),b20=custo(20,n20+1,0);
-  const ref=linhas.find(l=>/fck 30$/.test(l[0]))||linhas[linhas.length-1];
-  $('#custosTabelas').innerHTML=`
-    <h2>Regra do contrato</h2>
-    <p>Carga mínima <b>${fmt(r.min)} m³</b> por caminhão · taxa de <b>${reais(r.taxa)}</b> por m³ que falta · preço médio entre os fck <b>${reais(media)}/m³</b>.</p>
-    <pre class="resumo" style="margin-top:8px">Taxa = (nº de caminhões × ${fmt(r.min)} − volume total) × ${reais(r.taxa)}</pre>
-    <p class="leg">Valores só do concreto, sem bombeamento. Volumes múltiplos de ${fmt(r.min)} m³ não pagam taxa.</p>
-    <h2 style="margin-top:20px">Preços do concreto por fck</h2>
-    <div class="scroll"><table><tr><th>Concreto</th><th class="n">R$/m³</th><th class="n">Diferença p/ média</th></tr>
-      ${linhas.map(([n,p])=>linhaCusto(n,[reais(p),n==='Preço médio'?'—':(p>=media?'+':'−')+reais(Math.abs(p-media))])).join('')}</table></div>
-    <h2 style="margin-top:20px">Uma carga de 6 m³</h2>
-    <p>${c6.falta?`Faltam ${fmt(c6.falta)} m³ para o mínimo: taxa de <b>${reais(c6.taxa)}</b> por carga.`:'Não paga taxa.'}</p>
-    <div class="scroll"><table><tr><th>Concreto</th><th class="n pc">6 m³</th><th class="n">Taxa</th><th class="n">Total da carga</th><th class="n">Sai por m³</th></tr>
-      ${linhas.map(([n,p])=>{const c=custo(6,1,p);return linhaCusto(n,[[reais(c.conc),'pc'],reais(c.taxa),[reais(c.total),'forte'],reais(c.porM3)]);}).join('')}</table></div>
-    <h2 style="margin-top:20px">Consumo de 20 m³</h2>
-    <p>No mínimo ${n20} caminhões: faltam ${fmt(a20.falta)} m³ (taxa ${reais(a20.taxa)}). Com ${n20+1} caminhões, como em cargas de 5 a 6 m³: faltam ${fmt(b20.falta)} m³ (taxa ${reais(b20.taxa)}).</p>
-    <div class="scroll"><table><tr><th>Concreto</th><th class="n pc">Sem taxa</th><th class="n">${n20} caminhões</th><th class="n pc">m³ sai por</th><th class="n">${n20+1} caminhões</th><th class="n pc">m³ sai por</th></tr>
-      ${linhas.map(([n,p])=>{const a=custo(20,n20,p),b=custo(20,n20+1,p);return linhaCusto(n,[[reais(a.conc),'pc'],[reais(a.total),'forte'],[reais(a.porM3),'pc'],[reais(b.total),'forte'],[reais(b.porM3),'pc']]);}).join('')}</table></div>
-    <p class="leg">No ${ref[0]}, levar 20 m³ em ${n20+1} caminhões em vez de ${n20} custa <b>${reais(custo(20,n20+1,ref[1]).total-custo(20,n20,ref[1]).total)}</b> a mais.</p>`;
+  const {r,media}=B;
+  $('#custosRegra').innerHTML=`Regra do contrato: mínimo <b>${fmt(r.min)} m³</b> por caminhão · <b>${reais(r.taxa)}</b> por m³ que falta · preço médio dos fck <b>${reais(media)}/m³</b>. Sem bombeamento.`;
   renderSim();
 }
 function renderSim(){
@@ -179,13 +160,13 @@ function renderSim(){
   const {r,linhas,custo}=B,vol=Math.max(0,parseFloat(String($('#simVol').value).replace(',','.'))||0),cam=Math.max(1,parseInt($('#simCam').value)||1);
   if(!vol){$('#simInfo').textContent='Informe o volume.';$('#tSim').innerHTML='';return;}
   const min=Math.ceil(vol/r.min),falta=Math.max(0,cam*r.min-vol);
-  if(cam<min){$('#simInfo').textContent=`Com ${cam} caminhão(ões) não cabe: o mínimo para ${fmt(vol)} m³ é ${min}.`;$('#tSim').innerHTML='';return;}
-  $('#simInfo').textContent=`Faltam ${fmt(falta)} m³ para o mínimo: taxa de ${reais(falta*r.taxa)}.`+(cam>min?` Com ${min} caminhões a taxa seria ${reais(Math.max(0,min*r.min-vol)*r.taxa)}.`:'');
-  $('#tSim').innerHTML=`<tr><th>Concreto</th><th class="n pc">Sem taxa</th><th class="n">Taxa</th><th class="n">Total</th><th class="n">Sai por m³</th></tr>`+
-    linhas.map(([n,p])=>{const c=custo(vol,cam,p);return linhaCusto(n,[[reais(c.conc),'pc'],reais(c.taxa),[reais(c.total),'forte'],reais(c.porM3)]);}).join('');
+  if(cam<min){$('#simInfo').textContent=`${fmt(vol)} m³ não cabem em ${cam} caminhão(ões): o mínimo é ${min}.`;$('#tSim').innerHTML='';return;}
+  $('#simInfo').textContent=`${fmt(vol)} m³ em ${cam} caminhão(ões): faltam ${fmt(falta)} m³ → taxa ${reais(falta*r.taxa)}.`+(cam>min?` Com ${min} caminhões a taxa seria ${reais(Math.max(0,min*r.min-vol)*r.taxa)}.`:'');
+  $('#tSim').innerHTML=`<tr><th>Concreto</th><th class="n">Total</th><th class="n">m³ sai por</th></tr>`+
+    linhas.map(([n,p])=>{const c=custo(vol,cam,p);return linhaCusto(n,[[reais(c.total),'forte'],reais(c.porM3)]);}).join('');
 }
 function render(){
-  renderCustos();$('#custosConversa').textContent='';
+  renderCustos();$('#custosConversa').textContent='';$('#custosObra').innerHTML='';
   const termos=$('#obra').value.split(',').map(s=>s.trim()).filter(Boolean);
   const lim=+$('#limite').value||60;
   const R=Analise.analisar(TEXTO,termos);
@@ -218,7 +199,9 @@ function render(){
   const valorCom=(rotulo,preco)=>{const conc=vol*preco,tot=conc+taxaAbaixo;return {rotulo,preco,conc,tot,medio:vol?tot/vol:0};};
   const valores=precos.length?[...precos.map(([f,p])=>valorCom('fck '+fmt(f),p)),valorCom('Preço médio',precoMedio)]:[];
   const vMedio=valores[valores.length-1];
-  if(temRegra)$('#custosConversa').textContent=`Na conversa importada (${dias[0]?.data.slice(0,5)||'—'} a ${dias[dias.length-1]?.data.slice(0,5)||'—'}): ${fmt(vol)} m³ em ${cargas.length} cargas · ${abaixo.length} abaixo de ${fmt(regra.min)} m³ · taxa estimada ${reais(taxaAbaixo)}${vMedio&&vol?` · valor médio ${reais(vMedio.medio)}/m³`:''}.`;
+  if(temRegra)$('#custosConversa').textContent=`Obra (${dias[0]?.data.slice(0,5)||'—'} a ${dias[dias.length-1]?.data.slice(0,5)||'—'}): ${fmt(vol)} m³ em ${cargas.length} cargas · ${abaixo.length} abaixo de ${fmt(regra.min)} m³ · faltaram ${fmt(m3Falta)} m³ · taxa ${reais(taxaAbaixo)}`;
+  if(valores.length&&vol)$('#custosObra').innerHTML=`<div class="scroll"><table><tr><th>Concreto</th><th class="n">R$/m³</th><th class="n">Total da obra</th><th class="n">m³ sai por</th></tr>
+    ${valores.map(v=>linhaCusto(v.rotulo,[reais(v.preco),[reais(v.tot),'forte'],reais(v.medio)])).join('')}</table></div>`;
   $('#kpis').innerHTML=[
     [fmt(vol)+' m³','Concreto entregue'],[cargas.length,'Cargas (caminhões)'],[diasConc.length,'Dias com concretagem'],
     [duracao(media),'Espera média pedido → saída'],[atras.length,'Cargas com espera > '+lim+' min'],[maior?duracao(maior.espera):'—','Maior espera'+(maior?' ('+maior.data.slice(0,5)+')':'')],
