@@ -8,7 +8,6 @@ body{margin:0;font-family:var(--fonte);background:var(--bg);color:var(--tx);font
 h1{font-size:20px;margin:0;line-height:1.2;color:var(--tit);border-left:1px solid var(--ln);padding-left:18px}
 h1 small{display:block;font-size:12px;font-weight:500;color:var(--mut)}
 .cab .sec{margin-left:auto}
-@media (max-width:600px){h1{border-left:0;padding-left:0}}
 h2{font-size:16px;margin:0 0 12px}
 .sub{color:var(--mut);margin:0 0 16px}
 .card{background:var(--card);border:1px solid var(--ln);border-radius:12px;padding:16px;margin-bottom:16px}
@@ -17,6 +16,8 @@ h2{font-size:16px;margin:0 0 12px}
 input,select,button{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--ln);border-radius:8px;padding:7px 10px}
 button{cursor:pointer;background:var(--ac);color:var(--ac-tx);border-color:var(--ac);font-weight:600;border-radius:50px;text-transform:uppercase;letter-spacing:.5px;padding:7px 18px}
 button.sec{background:transparent;color:var(--ac)}
+#importar>summary{cursor:pointer;color:var(--mut);font-size:13px;font-weight:600}
+#importar[open]>summary{margin-bottom:12px}
 .drop{border:2px dashed var(--ln);border-radius:12px;padding:18px;text-align:center;color:var(--mut);cursor:pointer}
 .drop.on{border-color:var(--ac);background:var(--soft)}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
@@ -27,7 +28,7 @@ table{width:100%;border-collapse:collapse;font-size:13px}
 th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--ln);vertical-align:top}
 th{font-size:12px;color:var(--mut);font-weight:600}
 td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
-.tag{display:inline-block;padding:1px 7px;border-radius:99px;font-size:11px;font-weight:600}
+.tag{display:inline-block;padding:1px 7px;border-radius:99px;font-size:11px;font-weight:600;white-space:nowrap}
 .t-bad{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
 .t-warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
 .t-ok{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
@@ -52,3 +53,22 @@ pre.resumo{white-space:pre-wrap;background:var(--soft);padding:12px;border-radiu
 .largo{flex:1;min-width:220px}
 .aviso-audio{background:var(--soft);border-radius:8px;padding:10px 12px;margin:0 0 10px}
 .oculto{display:none}
+/* Celular (modelo 2 "Só o essencial"): tabelas só com as colunas principais; o resto (classe .pc) só no computador */
+@media (max-width:600px){
+  h1{border-left:0;padding-left:0;font-size:16px}
+  h1 small{font-size:11px}
+  .cab-in{padding:10px 12px;gap:4px 12px}
+  .cab-logo{height:30px}
+  .wrap{padding:12px 12px 40px}
+  .sub{margin-bottom:10px;font-size:13px}
+  .card{padding:12px}
+  .kpis{grid-template-columns:repeat(2,1fr);gap:8px}
+  .kpi{padding:10px 12px}
+  .kpi .v{font-size:22px}
+  .abas{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+  .abas button{padding:8px 4px;font-size:13px}
+  table{font-size:14px}
+  th,td{padding:9px 5px}
+  .pc{display:none}
+  .oc{grid-template-columns:1fr;gap:2px}
+}

@@ -84,7 +84,7 @@ async function abrir(arquivos){
     else texto=new TextDecoder().decode(buf);
     for(const a of soltos)audios[a.name]=new Uint8Array(await a.arrayBuffer());
     TEXTO=texto;NOME=nome.replace(/\.(txt|zip)$/i,'').replace(/^Conversa do WhatsApp com /i,'');AUDIOS=audios;
-    $('#de').value='';$('#ate').value='';render();
+    $('#de').value='';$('#ate').value='';render();recolherImportar();
     Guarda.salvar({texto:TEXTO,nome:NOME,audios:AUDIOS}).then(()=>$('#apagar').classList.remove('oculto')).catch(()=>{});
   }catch(e){$('#nomeGrupo').textContent='Não consegui ler o arquivo: '+e.message;}
 }
@@ -174,20 +174,20 @@ function render(){
   $('#copiar').onclick=async()=>{try{await navigator.clipboard.writeText(resumo);$('#okc').textContent='Copiado ✓'}catch(e){const r=document.createRange();r.selectNode($('#txtResumo'));getSelection().removeAllRanges();getSelection().addRange(r);$('#okc').textContent='Texto selecionado — use Ctrl+C'}};
 
   // ---------- POR DIA ----------
-  $('#a-dias').innerHTML=`<div class="scroll"><table><tr><th>Dia</th><th class="n">Cargas</th><th class="n">m³</th><th class="n">1º pedido</th><th class="n">1ª saída</th><th class="n">Última saída</th><th class="n">Espera média</th><th class="n">Maior espera</th><th>Observação</th></tr>
+  $('#a-dias').innerHTML=`<div class="scroll"><table><tr><th>Dia</th><th class="n">Cargas</th><th class="n">m³</th><th class="n pc">1º pedido</th><th class="n pc">1ª saída</th><th class="n pc">Última saída</th><th class="n">Espera média</th><th class="n">Maior espera</th><th class="pc">Observação</th></tr>
     ${dias.map(d=>{const v=d.cargas.reduce((s,c)=>s+c.vol,0);const e=d.cargas.filter(c=>c.espera!=null);
       const m=e.length?Math.round(e.reduce((s,c)=>s+c.espera,0)/e.length):null;const mx=e.length?Math.max(...e.map(c=>c.espera)):null;
       const ped=pedidos.filter(p=>p.chave===d.chave);
       const obs=[...d.cancel.map(c=>c.texto.split('\n').filter(l=>l.trim()).pop()),...d.ocorr.filter(o=>/chuv|chov|molhad|atras|dif[ií]cil|problema/i.test(o.texto)&&!d.cancel.some(c=>c.texto===o.texto)).map(o=>o.texto.split('\n').find(l=>/chuv|chov|molhad|atras|dif[ií]cil|problema/i.test(l))||o.texto)].slice(0,2).map(t=>esc(t.slice(0,80))).join('<br>');
       if(!d.cargas.length&&!obs)return '';
       return `<tr><td>${d.data.slice(0,5)} <span class="leg">${semana(d.chave)}</span></td><td class="n">${d.cargas.length||'—'}</td><td class="n">${v?fmt(v):'—'}</td>
-      <td class="n">${ped[0]?ped[0].hora:'—'}</td><td class="n">${d.cargas[0]?hhmm(d.cargas[0].saida):'—'}</td><td class="n">${d.cargas.length?hhmm(d.cargas[d.cargas.length-1].saida):'—'}</td>
-      <td class="n">${duracao(m)}</td><td class="n">${mx!=null?`<span class="tag ${mx>lim?'t-bad':'t-ok'}">${duracao(mx)}</span>`:'—'}</td><td style="font-size:12px">${obs}</td></tr>`}).join('')}</table></div>`;
+      <td class="n pc">${ped[0]?ped[0].hora:'—'}</td><td class="n pc">${d.cargas[0]?hhmm(d.cargas[0].saida):'—'}</td><td class="n pc">${d.cargas.length?hhmm(d.cargas[d.cargas.length-1].saida):'—'}</td>
+      <td class="n">${duracao(m)}</td><td class="n">${mx!=null?`<span class="tag ${mx>lim?'t-bad':'t-ok'}">${duracao(mx)}</span>`:'—'}</td><td class="pc" style="font-size:12px">${obs}</td></tr>`}).join('')}</table></div>`;
 
   // ---------- CARGAS ----------
-  $('#a-cargas').innerHTML=`<div class="scroll"><table><tr><th>Dia</th><th class="n">Nº</th><th class="n">m³</th><th>BT</th><th>NF</th><th class="n">Pedido</th><th class="n">Saída</th><th class="n">Espera</th></tr>
-    ${cargas.map(c=>`<tr><td>${c.data.slice(0,5)}</td><td class="n">${c.ordem}ª</td><td class="n">${fmt(c.vol)}${c.volPedido&&c.volPedido!==c.vol?` <span class="tag t-warn">pedido ${fmt(c.volPedido)}</span>`:''}</td><td>${esc(c.bt)}</td>
-    <td>${esc(c.nf)}${c.alertaNF?' <span class="tag t-warn">conferir</span>':''}</td><td class="n">${hhmm(c.pedido)}</td><td class="n">${hhmm(c.saida)}</td>
+  $('#a-cargas').innerHTML=`<div class="scroll"><table><tr><th>Dia</th><th class="n">Nº</th><th class="n">m³</th><th class="pc">BT</th><th class="pc">NF</th><th class="n pc">Pedido</th><th class="n">Saída</th><th class="n">Espera</th></tr>
+    ${cargas.map(c=>`<tr><td>${c.data.slice(0,5)}</td><td class="n">${c.ordem}ª</td><td class="n">${fmt(c.vol)}${c.volPedido&&c.volPedido!==c.vol?` <span class="tag t-warn">pedido ${fmt(c.volPedido)}</span>`:''}</td><td class="pc">${esc(c.bt)}</td>
+    <td class="pc">${esc(c.nf)}${c.alertaNF?' <span class="tag t-warn">conferir</span>':''}</td><td class="n pc">${hhmm(c.pedido)}</td><td class="n">${hhmm(c.saida)}</td>
     <td class="n">${c.espera==null?'—':`<span class="tag ${c.espera>lim?'t-bad':c.espera>lim*0.75?'t-warn':'t-ok'}">${duracao(c.espera)}</span>`}</td></tr>`).join('')}
     <tr><th colspan="2">Total</th><th class="n">${fmt(vol)}</th><th colspan="5">${cargas.length} cargas</th></tr></table></div>
     ${naoAt.length?`<h2 style="margin-top:16px">Pedidos que não saíram</h2><table>${naoAt.map(p=>`<tr><td>${p.data.slice(0,5)} ${p.hora}</td><td>${fmt(p.vol)} m³</td><td>${esc(p.quem)}</td><td><span class="tag t-mut">${p.cancelado?'cancelado/segurado pela obra':'sem carga anunciada'}</span></td></tr>`).join('')}</table>`:''}`;
@@ -232,6 +232,8 @@ async function pegarCompartilhado(){
   if(!arqs.length)return false;
   await abrir(arqs);return true;
 }
-Guarda.ler().then(d=>{if(d&&d.texto){TEXTO=d.texto;NOME=d.nome||'';AUDIOS=d.audios||{};$('#apagar').classList.remove('oculto');}})
+// Depois que tem conversa carregada, o quadro "Arraste aqui" fica recolhido (abre em "Trocar conversa, datas e filtros").
+function recolherImportar(){if(!TEXTO)return;$('#importarTit').classList.remove('oculto');$('#importar').open=false;}
+Guarda.ler().then(d=>{if(d&&d.texto){TEXTO=d.texto;NOME=d.nome||'';AUDIOS=d.audios||{};$('#apagar').classList.remove('oculto');recolherImportar();}})
   .then(()=>Guarda.lerTranscricoes()).then(t=>{TRANSC=t||{};}).catch(()=>{})
   .finally(()=>{render();pegarCompartilhado().catch(e=>{$('#nomeGrupo').textContent='Não consegui ler o arquivo compartilhado: '+e.message;});});
