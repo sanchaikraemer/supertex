@@ -105,6 +105,12 @@ const Contrato={
   salvar(o){try{localStorage.setItem('contratoCargaMin',JSON.stringify(o))}catch(e){}},
 };
 const reais=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+// Link de configuração: endereço terminado em #carga=X&taxa=Y salva a regra neste aparelho e some do endereço.
+// (o que vem depois do "#" não é enviado ao servidor; os valores nunca ficam no código)
+{const h=new URLSearchParams(location.hash.slice(1));
+ if(h.has('carga')&&h.has('taxa')){const o={min:+h.get('carga').replace(',','.')||0,taxa:+h.get('taxa').replace(',','.')||0};
+  Contrato.salvar(o);history.replaceState(null,'',location.pathname+location.search);
+  setTimeout(()=>alert(`Regra do contrato salva neste aparelho: carga mínima ${fmt(o.min)} m³ e taxa de ${reais(o.taxa)} por m³ que falta.`),300);}}
 {const r=Contrato.ler();if(r.min)$('#cMin').value=r.min;if(r.taxa)$('#cTaxa').value=r.taxa;}
 $('#salvarContrato').onclick=()=>{Contrato.salvar({min:+$('#cMin').value||0,taxa:+$('#cTaxa').value||0});render();};
 document.querySelectorAll('#abas button').forEach(b=>b.onclick=()=>{
