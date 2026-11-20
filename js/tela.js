@@ -71,11 +71,18 @@ function mostrarChave(){
   $('#chaveInfo').textContent=c?'Chave guardada neste aparelho (termina em …'+c.slice(-4)+'). Os áudios são enviados à OpenAI só para transcrever.':'Nenhuma chave guardada neste aparelho.';
   $('#tirarChave').classList.toggle('oculto',!c);
 }
-async function abrir(f){
+// Aceita o .zip exportado OU os arquivos já extraídos (o .txt junto com os áudios), escolhidos de uma vez.
+async function abrir(arquivos){
   try{
+    arquivos=[...arquivos];
+    const soltos=arquivos.filter(f=>/\.(opus|ogg|m4a|mp3)$/i.test(f.name));
+    const f=arquivos.find(x=>/\.(zip|txt)$/i.test(x.name))||arquivos.find(x=>!soltos.includes(x));
+    if(!f)throw new Error('escolha também o .txt da conversa (ou o .zip)');
+    const buf=await f.arrayBuffer(),u=new Uint8Array(buf);
     let nome=f.name,texto,audios={};
-    if(/\.zip$/i.test(f.name)){const r=await lerZip(await f.arrayBuffer());texto=r.texto;nome=r.nome;audios=r.audios;}
-    else texto=await f.text();
+    if(u[0]===0x50&&u[1]===0x4b){const r=await lerZip(buf);texto=r.texto;nome=r.nome;audios=r.audios;} // é zip (começa com "PK")
+    else texto=new TextDecoder().decode(buf);
+    for(const a of soltos)audios[a.name]=new Uint8Array(await a.arrayBuffer());
     TEXTO=texto;NOME=nome.replace(/\.(txt|zip)$/i,'').replace(/^Conversa do WhatsApp com /i,'');AUDIOS=audios;
     $('#de').value='';$('#ate').value='';render();
     Guarda.salvar({texto:TEXTO,nome:NOME,audios:AUDIOS}).then(()=>$('#apagar').classList.remove('oculto')).catch(()=>{});
@@ -83,10 +90,10 @@ async function abrir(f){
 }
 const drop=$('#drop');
 drop.onclick=()=>$('#arq').click();
-$('#arq').onchange=e=>e.target.files[0]&&abrir(e.target.files[0]);
+$('#arq').onchange=e=>e.target.files.length&&abrir(e.target.files);
 drop.ondragover=e=>{e.preventDefault();drop.classList.add('on')};
 drop.ondragleave=()=>drop.classList.remove('on');
-drop.ondrop=e=>{e.preventDefault();drop.classList.remove('on');e.dataTransfer.files[0]&&abrir(e.dataTransfer.files[0])};
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove('on');e.dataTransfer.files.length&&abrir(e.dataTransfer.files)};
 $('#aplicar').onclick=render;
 $('#apagar').onclick=()=>{if(confirm('Apagar a conversa guardada neste aparelho?'))Guarda.apagar().catch(()=>{}).finally(()=>location.reload());};
 $('#salvarChave').onclick=()=>{const v=$('#chave').value.trim();if(!v)return;Chave.salvar(v);$('#chave').value='';ERRO_TRANSC='';mostrarChave();render();};
@@ -215,5 +222,16 @@ function render(){
     ${Object.entries(bts).sort((a,b)=>b[1].n-a[1].n).map(([b,x])=>`<tr><td>${esc(b)}</td><td class="n">${x.n}</td><td class="n">${fmt(x.v)}</td></tr>`).join('')}</table></div></div>`;
 }
 // Ao abrir a página: volta a última conversa guardada, se tiver.
+// Conversa recebida pelo "Compartilhar" do WhatsApp (o sw.js guarda os arquivos e abre a página com ?compartilhado=1).
+async function pegarCompartilhado(){
+  if(!/compartilhado=1/.test(location.search)||!('caches' in window))return false;
+  history.replaceState(null,'',location.pathname);
+  const c=await caches.open('concreteira-compartilhado'),chaves=await c.keys(),arqs=[];
+  for(const k of chaves){const r=await c.match(k);arqs.push(new File([await r.blob()],decodeURIComponent(r.headers.get('x-nome')||'arquivo')));}
+  await caches.delete('concreteira-compartilhado');
+  if(!arqs.length)return false;
+  await abrir(arqs);return true;
+}
 Guarda.ler().then(d=>{if(d&&d.texto){TEXTO=d.texto;NOME=d.nome||'';AUDIOS=d.audios||{};$('#apagar').classList.remove('oculto');}})
-  .then(()=>Guarda.lerTranscricoes()).then(t=>{TRANSC=t||{};}).catch(()=>{}).finally(render);
+  .then(()=>Guarda.lerTranscricoes()).then(t=>{TRANSC=t||{};}).catch(()=>{})
+  .finally(()=>{render();pegarCompartilhado().catch(e=>{$('#nomeGrupo').textContent='Não consegui ler o arquivo compartilhado: '+e.message;});});
