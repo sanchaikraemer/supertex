@@ -26,7 +26,7 @@ Sanchai (comercial da Construtora Senger). **Não é programador.** Explique tud
 - `exemplos/` — conversas reais para teste (fora do Git).
 
 ## Versão
-O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0003`).
+O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0004`).
 **Toda vez que uma mudança for colocada no link, aumentar 1** (0003 → 0004 → 0005...), sempre com 4 dígitos.
 
 ## Como a leitura funciona (js/analise.js)
@@ -46,7 +46,10 @@ O número da versão aparece sempre no topo da página (`index.html`, no subtít
 - Cancelar, segurar, "não vamos mais", "por hj fechou" ou "vamos parar" (vindo da obra) cancela os pedidos pendentes do dia.
 - Ocorrências: mensagens com palavras como cancel, chuva, atraso, problema, difícil, Passo Fundo/PF, contrato, manutenção, molhado.
 - NF muito abaixo da maior NF anterior fica marcada como "conferir" (provável erro de digitação).
-- Áudios e fotos não são lidos; aparecem nas Ocorrências como "ouvir/ver no celular".
+- Fotos não são lidas; aparecem nas Ocorrências como "ouvir/ver no celular".
+- Áudios: se a conversa foi exportada **com mídia** (.zip) e há chave da OpenAI salva na página (campo "Transcrição dos áudios",
+  guardada só no aparelho, **nunca no repositório**), `js/tela.js` transcreve sozinho e mostra o texto nas Ocorrências.
+  O texto transcrito **não entra** no cálculo do relatório (decisão do Sanchai).
 
 ## Teste de referência
 Com `exemplos/hotel-senger.txt` (grupo O.STEX - CRZ | HOTEL - SENGER, de 03/11 a 19/11/2026) o resultado tem que ser:
