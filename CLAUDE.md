@@ -26,9 +26,9 @@ Sanchai (comercial da Construtora Senger). **Não é programador.** Explique tud
 - `exemplos/` — conversas reais para teste (fora do Git).
 
 ## Versão
-O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0016`).
+O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0017`).
 **Toda vez que uma mudança for colocada no link, aumentar 1** (0003 → 0004 → 0005...), sempre com 4 dígitos.
-Os links do manifesto e de **todos** os css/js no `index.html` levam o mesmo número (`?v=0016`): ao subir versão, trocar todos.
+Os links do manifesto e de **todos** os css/js no `index.html` levam o mesmo número (`?v=0017`): ao subir versão, trocar todos.
 Assim o navegador nunca mistura arquivo novo com arquivo velho (isso já quebrou a página uma vez). O `sw.js` também confere
 sempre com o servidor os arquivos do próprio app.
 
@@ -53,7 +53,10 @@ sempre com o servidor os arquivos do próprio app.
   (`CONTRATO_PADRAO` em `js/tela.js`) e aparecem sozinhos — decisão do Sanchai em 20/11/2026, ciente de que o repositório
   é público. O que for salvo no aparelho (campos da regra ou link `#carga=X&taxa=Y&fck=F:P,F:P`) tem prioridade.
   Não colocar no repositório o número do contrato, nomes, CNPJ nem o PDF.
-  Marca "falta X" na aba Cargas, soma nos números e no relatório; o Relatório mostra o valor estimado por fck e pelo preço médio.
+  Marca "falta X" na aba Cargas. **Gasto até agora** = cada carga × preço do fck dela + excedente. O fck de cada carga é lido
+  (em `js/tela.js`, sem mexer em `analise.js`) no pedido ligado à carga, senão na mensagem da carga, senão no último "fck NN"
+  ou código de produto do contrato (843xx) citado no grupo naquele dia; sem fck, usa o preço médio dos fck e avisa.
+  Aparece nos números do topo, no Relatório (tabela e texto), na aba Cargas (coluna fck) e na aba Custos.
   Aba **Custos** (enxuta, a pedido do Sanchai): uma linha com o resultado da obra (m³, cargas abaixo do mínimo, m³ que faltou,
   taxa), uma linha com a regra, tabela do valor da obra por fck (R$/m³, total com taxa, m³ sai por) e o simulador
   (volume + caminhões).
