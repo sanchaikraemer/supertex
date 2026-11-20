@@ -5,7 +5,7 @@
    (ver identidade/IDENTIDADE_SUPERTEX.md)
    ============================================================ */
 :root{
-  --fonte:'Gilroy','Inter',system-ui,sans-serif; /* Gilroy = fonte do site (paga, não vem do Google); sem ela no computador, usa Inter */
+  --fonte:'Gilroy','Figtree',system-ui,sans-serif; /* Gilroy = fonte do site (paga); sem ela no computador, usa Figtree (grátis e parecida) */
   --bg:#fafafa;      /* fundo da página (site: --white) */
   --card:#fff;       /* fundo dos quadros */
   --tx:#242020;      /* texto (site: --black) */
@@ -13,6 +13,9 @@
   --ln:#e6e6e6;      /* linhas e bordas (site: --gainsboro) */
   --ac:#ed3237;      /* COR PRINCIPAL DA MARCA (site: --vermelho-supertex) */
   --ac-tx:#fff;      /* texto em cima da cor principal (site: branco nos botões vermelhos) */
+  --ac2:#135189;     /* COR SECUNDÁRIA DA MARCA (site: --azul-supertex): faixa do topo */
+  --tit:#135189;     /* cor do título principal (azul, como no site) */
+  --ouro:#fcba30;    /* dourado (site: --gold): marca da aba escolhida */
   --soft:#f7eded;    /* fundo suave */
   --ok:#2e7d4f;      /* verde: dentro do prazo */
   --warn:#b7791f;    /* amarelo: atenção */
@@ -20,6 +23,6 @@
   --logo-url:none;   /* opcional */
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#161615;--card:#1f1f1d;--tx:#ecebe7;--mut:#a3a19a;--ln:#33322f;
+  --bg:#161615;--card:#1f1f1d;--tx:#ecebe7;--mut:#a3a19a;--ln:#33322f;--tit:#ecebe7;
   --ac:#ed3237;--soft:#2e2525;--ok:#6cc08f;--warn:#e0b25a;--bad:#e07a7a;
 }}

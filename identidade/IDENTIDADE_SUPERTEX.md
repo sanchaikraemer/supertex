@@ -18,7 +18,7 @@ Arquivo lido: https://cdn.prod.website-files.com/66a7787b7ed36b45613c93d2/css/su
      linhas `#e6e6e6` (`--gainsboro`). Tons escuros de faixas e rodapé: `#2b2727` (`--black--50`) e `#403939` (`--black-2`).
    - fonte dos títulos e do texto: **Gilroy** (a mesma para títulos e texto). Os arquivos da fonte ficam no próprio site;
      **não é do Google Fonts** e é uma fonte paga. Em `tema.css` ela aparece em primeiro lugar; quem não tem a Gilroy
-     no computador vê a Inter (a fonte que já carregava).
+     no computador vê a **Figtree** (grátis, do Google Fonts, escolhida por ser a mais parecida com a Gilroy).
      Extra: o site usa Great Vibes (Google Fonts) só numa assinatura decorativa — não serve para o painel.
 3. Passar os valores para `css/tema.css` (`--ac`, `--ac-tx`, `--fonte` etc.). Não mexer em mais nenhum arquivo.
 4. Conferir se o texto continua legível (contraste) nos botões, nas barras e nos selos de prazo.
