@@ -1,25 +1,26 @@
 /* ============================================================
-   TEMA — identidade visual (Supertex) — MODELO 4: TUDO ESCURO
+   TEMA — identidade visual (Supertex) — MODELO 2 DO SITE: AZUL SUPERTEX
    ÚNICO lugar onde ficam cores e fonte. Os outros arquivos só usam var(--...).
    Cores e fonte tiradas do CSS do site https://supertex.com.br em 20/11/2026
    (ver identidade/IDENTIDADE_SUPERTEX.md)
    ============================================================ */
 :root{
-  color-scheme:dark; /* calendário, barras de rolagem e campos do navegador também no escuro */
+  color-scheme:dark; /* calendário, barras de rolagem e campos do navegador no escuro */
   --fonte:'Gilroy','Figtree',system-ui,sans-serif; /* Gilroy = fonte do site (paga); sem ela no computador, usa Figtree (grátis e parecida) */
-  --cab:#1a1717;     /* fundo do cabeçalho com o logo */
-  --bg:#242020;      /* fundo da página (site: --black) */
-  --card:#2b2727;    /* fundo dos quadros (site: --black--50) */
-  --tx:#fafafa;      /* texto (site: --white) */
-  --mut:#b8b0b0;     /* texto secundário */
-  --ln:#403939;      /* linhas e bordas (site: --black-2) */
-  --ac:#ed3237;      /* COR PRINCIPAL DA MARCA (site: --vermelho-supertex) */
-  --ac-tx:#fff;      /* texto em cima da cor principal (site: branco nos botões vermelhos) */
-  --tit:#fafafa;     /* cor do título principal */
+  --cab:#0b3258;     /* fundo do cabeçalho com o logo */
+  --bg:#0f3d68;      /* fundo da página: azul Supertex (como a seção "Diferenciais" do site) */
+  --card:#0b3258;    /* fundo dos quadros (azul mais escuro) */
+  --tx:#ffffff;      /* texto */
+  --mut:#b8c8da;     /* texto secundário */
+  --ln:rgba(255,255,255,.16); /* linhas e bordas */
+  --ac:#ed3237;      /* COR PRINCIPAL DA MARCA (site: --vermelho-supertex): botões cheios, barras, riscos */
+  --ac-cl:#ff8a8d;   /* vermelho claro para texto pequeno e botões de contorno sobre o azul (o vermelho puro fica fraco) */
+  --ac-tx:#fff;      /* texto em cima da cor principal */
+  --tit:#ffffff;     /* cor do título principal */
   --ouro:#fcba30;    /* dourado (site: --gold): marca da aba escolhida */
-  --soft:#352f2f;    /* fundo suave (resumo, selos cinza) */
-  --ok:#6cc08f;      /* verde: dentro do prazo */
-  --warn:#e0b25a;    /* amarelo: atenção */
-  --bad:#ef7b7b;     /* vermelho: atraso */
+  --soft:#0a2c4e;    /* fundo suave (resumo, selos cinza) */
+  --ok:#7fd3a0;      /* verde: dentro do prazo */
+  --warn:#f2c35a;    /* amarelo: atenção */
+  --bad:#ff8a80;     /* vermelho: atraso */
   --logo-url:none;   /* opcional */
 }
