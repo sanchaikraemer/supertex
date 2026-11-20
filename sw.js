@@ -28,8 +28,10 @@ self.addEventListener('fetch', e => {
     return;
   }
   if (e.request.method !== 'GET' || !e.request.url.startsWith('http')) return;
+  // Arquivos do próprio app: sempre confere com o servidor (nada de cópia velha guardada pelo navegador).
+  const doApp = url.origin === self.location.origin;
   e.respondWith(
-    fetch(e.request)
+    fetch(e.request, doApp ? { cache: 'no-cache' } : undefined)
       .then(r => {
         const copia = r.clone();
         caches.open(CACHE).then(c => c.put(e.request, copia)).catch(() => {});

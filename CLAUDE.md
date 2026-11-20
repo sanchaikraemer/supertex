@@ -26,9 +26,11 @@ Sanchai (comercial da Construtora Senger). **Não é programador.** Explique tud
 - `exemplos/` — conversas reais para teste (fora do Git).
 
 ## Versão
-O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0013`).
+O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0014`).
 **Toda vez que uma mudança for colocada no link, aumentar 1** (0003 → 0004 → 0005...), sempre com 4 dígitos.
-O link do manifesto no `index.html` leva o mesmo número (`manifest.webmanifest?v=0013`), para o celular nunca pegar a ficha antiga do app.
+Os links do manifesto e de **todos** os css/js no `index.html` levam o mesmo número (`?v=0014`): ao subir versão, trocar todos.
+Assim o navegador nunca mistura arquivo novo com arquivo velho (isso já quebrou a página uma vez). O `sw.js` também confere
+sempre com o servidor os arquivos do próprio app.
 
 ## Como a leitura funciona (js/analise.js)
 - Mensagem nova = linha que começa com `dd/mm/aaaa hh:mm - Nome: texto`. Linhas seguintes continuam a mesma mensagem.
