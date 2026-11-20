@@ -7,18 +7,21 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icones/icone.svg" type="image/svg+xml">
+<link rel="icon" href="icones/icone-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="Concreteira">
 <link rel="stylesheet" href="css/tema.css">
 <link rel="stylesheet" href="css/estilo.css">
 </head>
 <body>
-<div class="wrap">
-  <div class="topo">
-    <h1>Acompanhamento da Concreteira <span class="leg" style="font-weight:500">· Supertex</span></h1>
+<header class="cab">
+  <div class="cab-in">
+    <img src="icones/logo-supertex.png" alt="Supertex" class="cab-logo">
+    <h1>Acompanhamento da Concreteira<small>Painel da obra · Construtora Senger</small></h1>
     <button id="instalar" class="sec oculto">Instalar app</button>
   </div>
+</header>
+<div class="wrap">
   <p id="dicaIphone" class="leg oculto">No iPhone/iPad: toque em <b>Compartilhar</b> (quadrado com seta para cima) e depois em <b>Adicionar à Tela de Início</b>.</p>
   <p class="sub" id="nomeGrupo">—</p>
 
@@ -36,6 +39,7 @@
       <label>Espera aceitável (min)
         <input id="limite" type="number" value="60" style="width:90px"></label>
       <button id="aplicar">Atualizar</button>
+      <button id="apagar" class="sec oculto">Apagar conversa</button>
     </div>
   </div>
 
