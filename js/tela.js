@@ -111,16 +111,25 @@ const lerPrecos=t=>String(t||'').split(/[;\s]+|,(?=\s*\d+\s*[:=])/).map(x=>x.spl
 const textoPrecos=l=>(l||[]).map(([f,p])=>`${fmt(f)}:${String(p).replace('.',',')}`).join(', ');
 // Link de configuração: endereço terminado em #carga=X&taxa=Y&fck=F:P,F:P salva a regra neste aparelho e some do endereço.
 // (o que vem depois do "#" não é enviado ao servidor; os valores nunca ficam no código)
-function aplicarLinkConfig(){const h=new URLSearchParams(location.hash.slice(1));
- if(h.has('carga')||h.has('taxa')||h.has('fck')){const o=Contrato.ler(),num=k=>+h.get(k).replace(',','.')||0;
-  if(h.has('carga'))o.min=num('carga');if(h.has('taxa'))o.taxa=num('taxa');if(h.has('fck'))o.precos=lerPrecos(h.get('fck'));
-  Contrato.salvar(o);history.replaceState(null,'',location.pathname+location.search);
-  const ok=[o.min&&`carga mínima ${fmt(o.min)} m³`,o.taxa&&`taxa de ${reais(o.taxa)} por m³ que falta`,o.precos&&o.precos.length&&`preços de ${o.precos.length} fck`].filter(Boolean).join(', ');
-  setTimeout(()=>alert(`Regra do contrato salva neste aparelho: ${ok}.`),300);return true;}return false;}
+// Salva a regra a partir do texto do link (o que vem depois do "#"). Devolve o resumo do que foi salvo, ou '' se não reconheceu.
+function salvarConfig(txt){const i=String(txt||'').indexOf('#'),h=new URLSearchParams(i>=0?txt.slice(i+1):String(txt||'').trim());
+ if(!(h.has('carga')||h.has('taxa')||h.has('fck')))return '';
+ const o=Contrato.ler(),num=k=>+h.get(k).replace(',','.')||0;
+ if(h.has('carga'))o.min=num('carga');if(h.has('taxa'))o.taxa=num('taxa');if(h.has('fck'))o.precos=lerPrecos(h.get('fck'));
+ Contrato.salvar(o);
+ return [o.min&&`carga mínima ${fmt(o.min)} m³`,o.taxa&&`taxa de ${reais(o.taxa)} por m³ que falta`,o.precos&&o.precos.length&&`preços de ${o.precos.length} fck`].filter(Boolean).join(', ');}
+function preencherContrato(){const r=Contrato.ler();$('#cMin').value=r.min||'';$('#cTaxa').value=r.taxa||'';$('#cPrecos').value=textoPrecos(r.precos);}
+function aplicarLinkConfig(){const ok=salvarConfig(location.hash);if(!ok)return false;
+ history.replaceState(null,'',location.pathname+location.search);
+ setTimeout(()=>alert(`Regra do contrato salva neste aparelho: ${ok}.`),300);return true;}
 aplicarLinkConfig();
 // se o link for aberto com o app já aberto na mesma aba, só o "#" muda: aplica e redesenha
-window.addEventListener('hashchange',()=>{if(aplicarLinkConfig()){const r=Contrato.ler();$('#cMin').value=r.min||'';$('#cTaxa').value=r.taxa||'';$('#cPrecos').value=textoPrecos(r.precos);render();}});
-{const r=Contrato.ler();if(r.min)$('#cMin').value=r.min;if(r.taxa)$('#cTaxa').value=r.taxa;if(r.precos)$('#cPrecos').value=textoPrecos(r.precos);}
+window.addEventListener('hashchange',()=>{if(aplicarLinkConfig()){preencherContrato();render();}});
+preencherContrato();
+// Colar o link de configuração dentro do app (aba Custos)
+$('#aplicarLink').onclick=()=>{const ok=salvarConfig($('#linkConfig').value);
+ if(!ok){alert('Não reconheci esse link. Copie a mensagem inteira com o link de configuração do contrato e cole de novo.');return;}
+ $('#linkConfig').value='';preencherContrato();render();alert(`Regra do contrato salva neste aparelho: ${ok}.`);};
 $('#simVol').oninput=$('#simCam').oninput=()=>renderSim();
 $('#salvarContrato').onclick=()=>{Contrato.salvar({min:+$('#cMin').value||0,taxa:+$('#cTaxa').value||0,precos:lerPrecos($('#cPrecos').value)});render();};
 document.querySelectorAll('#abas button').forEach(b=>b.onclick=()=>{
@@ -140,7 +149,8 @@ const linhaCusto=(n,cels)=>`<tr${n==='Preço médio'?' class="destaque"':''}><td
 function renderCustos(){
   const B=custosBase();
   $('#custosSemRegra').classList.toggle('oculto',!!B);$('#custosConteudo').classList.toggle('oculto',!B);
-  if(!B)return;
+  if(!B){const r=Contrato.ler(),f=[!(r.min>0)&&'a carga mínima',!(r.taxa>0)&&'a taxa',!(r.precos&&r.precos.length)&&'os preços por fck'].filter(Boolean);
+    $('#custosFalta').textContent=`Este aparelho ainda não tem ${f.join(', ').replace(/, ([^,]*)$/,' e $1')} do contrato.`;return;}
   const {r,media,linhas,custo}=B,camMin=v=>Math.ceil(v/r.min);
   const c6=custo(6,1,0);
   const n20=camMin(20),a20=custo(20,n20,0),b20=custo(20,n20+1,0);
