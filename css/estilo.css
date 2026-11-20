@@ -52,6 +52,7 @@ pre.resumo{white-space:pre-wrap;background:var(--soft);padding:12px;border-radiu
 .transc .barra{margin-top:8px}
 .largo{flex:1;min-width:220px}
 .curto{width:130px}
+tr.destaque td{font-weight:700}
 .aviso-audio{background:var(--soft);border-radius:8px;padding:10px 12px;margin:0 0 10px}
 .oculto{display:none}
 /* Celular (modelo 2 "Só o essencial"): tabelas só com as colunas principais; o resto (classe .pc) só no computador */

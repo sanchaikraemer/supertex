@@ -105,14 +105,20 @@ const Contrato={
   salvar(o){try{localStorage.setItem('contratoCargaMin',JSON.stringify(o))}catch(e){}},
 };
 const reais=n=>n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
-// Link de configuração: endereço terminado em #carga=X&taxa=Y salva a regra neste aparelho e some do endereço.
+// Preços do concreto por fck, escritos como "fck:preço" separados por vírgula, ponto e vírgula ou espaço (ex.: 25:600, 30:650).
+const lerPrecos=t=>String(t||'').split(/[;\s]+|,(?=\s*\d+\s*[:=])/).map(x=>x.split(/[:=]/)).filter(x=>x.length===2)
+  .map(([f,p])=>[+f.replace(',','.'),+p.replace(',','.')]).filter(([f,p])=>f>0&&p>0);
+const textoPrecos=l=>(l||[]).map(([f,p])=>`${fmt(f)}:${String(p).replace('.',',')}`).join(', ');
+// Link de configuração: endereço terminado em #carga=X&taxa=Y&fck=F:P,F:P salva a regra neste aparelho e some do endereço.
 // (o que vem depois do "#" não é enviado ao servidor; os valores nunca ficam no código)
 {const h=new URLSearchParams(location.hash.slice(1));
- if(h.has('carga')&&h.has('taxa')){const o={min:+h.get('carga').replace(',','.')||0,taxa:+h.get('taxa').replace(',','.')||0};
+ if(h.has('carga')||h.has('taxa')||h.has('fck')){const o=Contrato.ler(),num=k=>+h.get(k).replace(',','.')||0;
+  if(h.has('carga'))o.min=num('carga');if(h.has('taxa'))o.taxa=num('taxa');if(h.has('fck'))o.precos=lerPrecos(h.get('fck'));
   Contrato.salvar(o);history.replaceState(null,'',location.pathname+location.search);
-  setTimeout(()=>alert(`Regra do contrato salva neste aparelho: carga mínima ${fmt(o.min)} m³ e taxa de ${reais(o.taxa)} por m³ que falta.`),300);}}
-{const r=Contrato.ler();if(r.min)$('#cMin').value=r.min;if(r.taxa)$('#cTaxa').value=r.taxa;}
-$('#salvarContrato').onclick=()=>{Contrato.salvar({min:+$('#cMin').value||0,taxa:+$('#cTaxa').value||0});render();};
+  const ok=[o.min&&`carga mínima ${fmt(o.min)} m³`,o.taxa&&`taxa de ${reais(o.taxa)} por m³ que falta`,o.precos&&o.precos.length&&`preços de ${o.precos.length} fck`].filter(Boolean).join(', ');
+  setTimeout(()=>alert(`Regra do contrato salva neste aparelho: ${ok}.`),300);}}
+{const r=Contrato.ler();if(r.min)$('#cMin').value=r.min;if(r.taxa)$('#cTaxa').value=r.taxa;if(r.precos)$('#cPrecos').value=textoPrecos(r.precos);}
+$('#salvarContrato').onclick=()=>{Contrato.salvar({min:+$('#cMin').value||0,taxa:+$('#cTaxa').value||0,precos:lerPrecos($('#cPrecos').value)});render();};
 document.querySelectorAll('#abas button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('#abas button').forEach(x=>x.classList.toggle('at',x===b));
   ['resumo','dias','cargas','ocorr','nfs'].forEach(a=>$('#a-'+a).classList.toggle('oculto',a!==b.dataset.a));
@@ -146,10 +152,16 @@ function render(){
   const regra=Contrato.ler(),temRegra=regra.min>0&&regra.taxa>0;
   const abaixo=temRegra?cargas.filter(c=>c.vol<regra.min):[];
   const m3Falta=abaixo.reduce((s,c)=>s+(regra.min-c.vol),0),taxaAbaixo=m3Falta*(regra.taxa||0);
+  // Valor estimado do concreto: m³ × preço de cada fck do contrato (e do preço médio entre eles) + taxa das cargas abaixo do mínimo.
+  const precos=regra.precos||[],precoMedio=precos.length?precos.reduce((s,p)=>s+p[1],0)/precos.length:0;
+  const valorCom=(rotulo,preco)=>{const conc=vol*preco,tot=conc+taxaAbaixo;return {rotulo,preco,conc,tot,medio:vol?tot/vol:0};};
+  const valores=precos.length?[...precos.map(([f,p])=>valorCom('fck '+fmt(f),p)),valorCom('Preço médio',precoMedio)]:[];
+  const vMedio=valores[valores.length-1];
   $('#kpis').innerHTML=[
     [fmt(vol)+' m³','Concreto entregue'],[cargas.length,'Cargas (caminhões)'],[diasConc.length,'Dias com concretagem'],
     [duracao(media),'Espera média pedido → saída'],[atras.length,'Cargas com espera > '+lim+' min'],[maior?duracao(maior.espera):'—','Maior espera'+(maior?' ('+maior.data.slice(0,5)+')':'')],
-    ...(temRegra?[[reais(taxaAbaixo),`Taxa estimada: ${abaixo.length} carga(s) abaixo de ${fmt(regra.min)} m³`]]:[])
+    ...(temRegra?[[reais(taxaAbaixo),`Taxa estimada: ${abaixo.length} carga(s) abaixo de ${fmt(regra.min)} m³`]]:[]),
+    ...(vMedio&&vol?[[reais(vMedio.medio),`Valor médio do m³ (preço médio do contrato${temRegra?' + taxa':''})`]]:[])
   ].map(([v,l])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
 
   // ---------- RELATÓRIO ----------
@@ -177,6 +189,8 @@ function render(){
     ...(linhasAtr.length?['',`ESPERAS ACIMA DE ${lim} MIN`,...linhasAtr]:[]),
     ...(naoAt.length?['','PEDIDOS NÃO ENVIADOS (cancelados/segurados pela obra)',...naoAt.map(p=>`• ${p.data.slice(0,5)} ${p.hora} – ${fmt(p.vol)} m³`)]:[]),
     ...(abaixo.length?['',`CARGAS ABAIXO DE ${fmt(regra.min)} m³ (taxa do contrato)`,`• ${abaixo.length} carga(s), faltaram ${fmt(m3Falta)} m³ no total – taxa estimada ${reais(taxaAbaixo)}`]:[]),
+    ...(valores.length&&vol?['',`VALOR ESTIMADO (preços do contrato${temRegra?`, já com a taxa das cargas abaixo de ${fmt(regra.min)} m³`:''})`,
+      ...valores.map(v=>`• ${v.rotulo} (${reais(v.preco)}/m³): total ${reais(v.tot)} – média ${reais(v.medio)}/m³`)]:[]),
     ...(alertasNF.length?['','CONFERIR',...alertasNF.map(c=>`• NF ${c.nf} (${c.data.slice(0,5)}, ${c.ordem}ª carga) fora da sequência – possível erro de digitação`)]:[]),
   ].join('\n');
 
@@ -187,6 +201,10 @@ function render(){
       <div style="margin-top:8px;display:flex;gap:8px;align-items:center"><button id="copiar">Copiar texto</button><span id="okc" class="leg"></span></div></div>
       <div><h2>m³ por dia</h2><div class="barras">${diasConc.map(d=>{const v=d.cargas.reduce((s,c)=>s+c.vol,0);
         return `<div class="br"><span>${d.data.slice(0,5)} ${semana(d.chave)}</span><div class="f" style="width:${v/porDiaMax*100}%"></div><span>${fmt(v)} m³</span></div>`}).join('')}</div>
+      ${valores.length&&vol?`<h2 style="margin-top:20px">Valor estimado (preços do contrato)</h2>
+      <p class="leg" style="margin-top:-6px">${fmt(vol)} m³${temRegra?` · taxa das cargas abaixo de ${fmt(regra.min)} m³ incluída: ${reais(taxaAbaixo)}`:''}</p>
+      <table><tr><th>Concreto</th><th class="n">R$/m³</th><th class="n pc">Só concreto</th><th class="n">Total</th><th class="n">Média/m³</th></tr>
+      ${valores.map(v=>`<tr${v.rotulo==='Preço médio'?' class="destaque"':''}><td>${v.rotulo}</td><td class="n">${reais(v.preco)}</td><td class="n pc">${reais(v.conc)}</td><td class="n">${reais(v.tot)}</td><td class="n">${reais(v.medio)}</td></tr>`).join('')}</table>`:''}
       <h2 style="margin-top:20px">Quem mais falou no grupo</h2>
       <table>${Object.entries(R.participantes).sort((a,b)=>b[1]-a[1]).map(([q,n])=>`<tr><td>${esc(q)} ${termos.some(t=>q.toLowerCase().includes(t.toLowerCase()))?'<span class="tag t-mut">obra</span>':''}</td><td class="n">${n}</td></tr>`).join('')}</table></div>
     </div>`;
