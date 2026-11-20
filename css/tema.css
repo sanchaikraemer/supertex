@@ -1,18 +1,18 @@
 /* ============================================================
    TEMA — identidade visual (Supertex)
    ÚNICO lugar onde ficam cores e fonte. Os outros arquivos só usam var(--...).
-   PROVISÓRIO: preencher com as cores reais de https://supertex.com.br
+   Cores e fonte tiradas do CSS do site https://supertex.com.br em 20/11/2026
    (ver identidade/IDENTIDADE_SUPERTEX.md)
    ============================================================ */
 :root{
-  --fonte:'Inter',system-ui,sans-serif;
-  --bg:#f6f5f2;      /* fundo da página */
+  --fonte:'Gilroy','Inter',system-ui,sans-serif; /* Gilroy = fonte do site (paga, não vem do Google); sem ela no computador, usa Inter */
+  --bg:#fafafa;      /* fundo da página (site: --white) */
   --card:#fff;       /* fundo dos quadros */
-  --tx:#1d1d1b;      /* texto */
+  --tx:#242020;      /* texto (site: --black) */
   --mut:#6b6a65;     /* texto secundário */
-  --ln:#e4e2dc;      /* linhas e bordas */
-  --ac:#d71920;      /* COR PRINCIPAL DA MARCA (botões, barras, destaques) */
-  --ac-tx:#fff;      /* texto em cima da cor principal */
+  --ln:#e6e6e6;      /* linhas e bordas (site: --gainsboro) */
+  --ac:#ed3237;      /* COR PRINCIPAL DA MARCA (site: --vermelho-supertex) */
+  --ac-tx:#fff;      /* texto em cima da cor principal (site: branco nos botões vermelhos) */
   --soft:#f7eded;    /* fundo suave */
   --ok:#2e7d4f;      /* verde: dentro do prazo */
   --warn:#b7791f;    /* amarelo: atenção */
@@ -21,5 +21,5 @@
 }
 @media (prefers-color-scheme:dark){:root{
   --bg:#161615;--card:#1f1f1d;--tx:#ecebe7;--mut:#a3a19a;--ln:#33322f;
-  --ac:#ef6b6b;--soft:#2e2525;--ok:#6cc08f;--warn:#e0b25a;--bad:#e07a7a;
+  --ac:#ed3237;--soft:#2e2525;--ok:#6cc08f;--warn:#e0b25a;--bad:#e07a7a;
 }}
