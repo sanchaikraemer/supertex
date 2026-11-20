@@ -26,9 +26,9 @@ Sanchai (comercial da Construtora Senger). **Não é programador.** Explique tud
 - `exemplos/` — conversas reais para teste (fora do Git).
 
 ## Versão
-O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0008`).
+O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0009`).
 **Toda vez que uma mudança for colocada no link, aumentar 1** (0003 → 0004 → 0005...), sempre com 4 dígitos.
-O link do manifesto no `index.html` leva o mesmo número (`manifest.webmanifest?v=0008`), para o celular nunca pegar a ficha antiga do app.
+O link do manifesto no `index.html` leva o mesmo número (`manifest.webmanifest?v=0009`), para o celular nunca pegar a ficha antiga do app.
 
 ## Como a leitura funciona (js/analise.js)
 - Mensagem nova = linha que começa com `dd/mm/aaaa hh:mm - Nome: texto`. Linhas seguintes continuam a mesma mensagem.
@@ -49,6 +49,8 @@ O link do manifesto no `index.html` leva o mesmo número (`manifest.webmanifest?
 - NF muito abaixo da maior NF anterior fica marcada como "conferir" (provável erro de digitação).
 - Regra do contrato "carga mínima" (m³ mínimo e taxa por m³ faltante): digitada na página e guardada **só no aparelho**
   (localStorage). **Nunca colocar valores do contrato no repositório** (é público). Marca "falta X" na aba Cargas, soma nos números e no relatório.
+  Também pode ser salva por um **link de configuração**: endereço do app terminado em `#carga=X&taxa=Y`
+  (o Sanchai manda esse link à equipe pelo WhatsApp; o link com os valores **não** vai para o repositório).
 - Fotos não são lidas; aparecem nas Ocorrências como "ouvir/ver no celular".
 - Áudios: se a conversa foi exportada **com mídia** (.zip) e há chave da OpenAI salva na página (campo "Transcrição dos áudios",
   guardada só no aparelho, **nunca no repositório**), `js/tela.js` transcreve sozinho e mostra o texto nas Ocorrências.
