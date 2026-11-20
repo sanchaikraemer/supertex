@@ -26,9 +26,9 @@ Sanchai (comercial da Construtora Senger). **Não é programador.** Explique tud
 - `exemplos/` — conversas reais para teste (fora do Git).
 
 ## Versão
-O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0017`).
+O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0018`).
 **Toda vez que uma mudança for colocada no link, aumentar 1** (0003 → 0004 → 0005...), sempre com 4 dígitos.
-Os links do manifesto e de **todos** os css/js no `index.html` levam o mesmo número (`?v=0017`): ao subir versão, trocar todos.
+Os links do manifesto e de **todos** os css/js no `index.html` levam o mesmo número (`?v=0018`): ao subir versão, trocar todos.
 Assim o navegador nunca mistura arquivo novo com arquivo velho (isso já quebrou a página uma vez). O `sw.js` também confere
 sempre com o servidor os arquivos do próprio app.
 
@@ -57,6 +57,8 @@ sempre com o servidor os arquivos do próprio app.
   (em `js/tela.js`, sem mexer em `analise.js`) no pedido ligado à carga, senão na mensagem da carga, senão no último "fck NN"
   ou código de produto do contrato (843xx) citado no grupo naquele dia; sem fck, usa o preço médio dos fck e avisa.
   Aparece nos números do topo, no Relatório (tabela e texto), na aba Cargas (coluna fck) e na aba Custos.
+- Quadro **Resumo** no topo (acima dos números): entregue, esperas, gasto, cargas abaixo do mínimo com a economia possível
+  (calculada **dia a dia**: um caminhão não junta concreto de dias diferentes) e o que conferir.
   Aba **Custos** (enxuta, a pedido do Sanchai): uma linha com o resultado da obra (m³, cargas abaixo do mínimo, m³ que faltou,
   taxa), uma linha com a regra, tabela do valor da obra por fck (R$/m³, total com taxa, m³ sai por) e o simulador
   (volume + caminhões).
