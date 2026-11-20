@@ -28,12 +28,13 @@ Sanchai (comercial da Construtora Senger). **Não é programador.** Explique tud
 ## Visual (versão 0022)
 Layout "Azul Supertex" (modelo 2 inspirado no site, escolhido pelo Sanchai): fundo azul, quadros azul-escuro, títulos pequenos
 vermelhos em cima de cada grupo de números (**Custos** com o Faturamento total em destaque, **Entregas**, **Prazos**).
+Ícone do app: logo completo da Supertex sobre o azul do site (#135189), arquivos `icones/*-azul-*.png`.
 Texto pequeno vermelho e botões de contorno usam `--ac-cl` (vermelho claro), porque o vermelho puro fica fraco no azul.
 
 ## Versão
-O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0022`).
+O número da versão aparece sempre no topo da página (`index.html`, no subtítulo do cabeçalho: `versão 0023`).
 **Toda vez que uma mudança for colocada no link, aumentar 1** (0003 → 0004 → 0005...), sempre com 4 dígitos.
-Os links do manifesto e de **todos** os css/js no `index.html` levam o mesmo número (`?v=0022`): ao subir versão, trocar todos.
+Os links do manifesto e de **todos** os css/js no `index.html` levam o mesmo número (`?v=0023`): ao subir versão, trocar todos.
 Assim o navegador nunca mistura arquivo novo com arquivo velho (isso já quebrou a página uma vez). O `sw.js` também confere
 sempre com o servidor os arquivos do próprio app.
 
