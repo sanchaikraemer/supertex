@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Acompanhamento da Concreteira</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tema.css">
+<link rel="stylesheet" href="css/estilo.css">
+</head>
+<body>
+<div class="wrap">
+  <h1>Acompanhamento da Concreteira <span class="leg" style="font-weight:500">· Supertex</span></h1>
+  <p class="sub" id="nomeGrupo">—</p>
+
+  <div class="card">
+    <div class="drop" id="drop">
+      <b>Arraste aqui a conversa exportada do WhatsApp</b> (.zip ou .txt) — ou clique para escolher<br>
+      <span style="font-size:12px">No WhatsApp: abra o grupo → ⋮ → Mais → Exportar conversa → Sem mídia (ou com mídia)</span>
+      <input type="file" id="arq" accept=".zip,.txt" class="oculto">
+    </div>
+    <div class="barra" style="margin-top:12px">
+      <label>De <input type="date" id="de"></label>
+      <label>Até <input type="date" id="ate"></label>
+      <label style="flex:1;min-width:220px">Quem é da obra (nomes separados por vírgula)
+        <input id="obra" value="Senger, Sanchai, Você"></label>
+      <label>Espera aceitável (min)
+        <input id="limite" type="number" value="60" style="width:90px"></label>
+      <button id="aplicar">Atualizar</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="card" style="margin-top:16px">
+    <div class="abas" id="abas">
+      <button data-a="resumo" class="at">Relatório</button>
+      <button data-a="dias">Por dia</button>
+      <button data-a="cargas">Cargas</button>
+      <button data-a="ocorr">Ocorrências</button>
+      <button data-a="nfs">Notas e caminhões</button>
+    </div>
+    <div id="a-resumo"></div>
+    <div id="a-dias" class="oculto"></div>
+    <div id="a-cargas" class="oculto"></div>
+    <div id="a-ocorr" class="oculto"></div>
+    <div id="a-nfs" class="oculto"></div>
+  </div>
+  <p class="leg">Espera = hora que a obra pediu a carga → hora que o caminhão saiu da usina (anunciado no grupo). Áudios e fotos não são lidos automaticamente; aparecem listados nas Ocorrências.</p>
+</div>
+
+<script src="js/analise.js"></script>
+<script src="js/tela.js"></script>
+</body>
+</html>
