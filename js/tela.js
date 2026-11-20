@@ -33,11 +33,17 @@ async function lerZip(buf){
 const Guarda={
   banco(){return new Promise((ok,erro)=>{const r=indexedDB.open('concreteira',1);r.onupgradeneeded=()=>r.result.createObjectStore('conversa');r.onsuccess=()=>ok(r.result);r.onerror=()=>erro(r.error);});},
   async usar(modo,fazer){const db=await this.banco();return new Promise((ok,erro)=>{const t=db.transaction('conversa',modo);const r=fazer(t.objectStore('conversa'));t.oncomplete=()=>ok(r.result);t.onerror=()=>erro(t.error);});},
-  salvar(d){return this.usar('readwrite',s=>s.put(d,'ultima'));},
-  ler(){return this.usar('readonly',s=>s.get('ultima'));},
+  // Várias obras: cada conversa importada fica em "obra:<nome do grupo>"; "atual" diz qual está aberta.
+  salvarObra(d){return this.usar('readwrite',s=>{s.put(d,'obra:'+d.nome);return s.put(d.nome,'atual');});},
+  lerObra(nome){return this.usar('readonly',s=>s.get('obra:'+nome));},
+  lerAtual(){return this.usar('readonly',s=>s.get('atual'));},
+  definirAtual(nome){return this.usar('readwrite',s=>s.put(nome,'atual'));},
+  async listarObras(){const k=await this.usar('readonly',s=>s.getAllKeys());return (k||[]).filter(x=>String(x).startsWith('obra:')).map(x=>x.slice(5)).sort((a,b)=>a.localeCompare(b,'pt-BR'));},
+  apagarObra(nome){return this.usar('readwrite',s=>s.delete('obra:'+nome));},
+  ler(){return this.usar('readonly',s=>s.get('ultima'));},          // formato antigo (uma conversa só), só para migrar
+  apagarAntiga(){return this.usar('readwrite',s=>s.delete('ultima'));},
   salvarTranscricoes(t){return this.usar('readwrite',s=>s.put(t,'transcricoes'));},
   lerTranscricoes(){return this.usar('readonly',s=>s.get('transcricoes'));},
-  apagar(){return this.usar('readwrite',s=>s.clear());}, // conversa, áudios e transcrições
 };
 // --- transcrição dos áudios (OpenAI). A chave fica só neste aparelho, nunca no GitHub. ---
 const MODELO_TRANSCRICAO='gpt-4o-mini-transcribe';
@@ -85,7 +91,8 @@ async function abrir(arquivos){
     for(const a of soltos)audios[a.name]=new Uint8Array(await a.arrayBuffer());
     TEXTO=texto;NOME=nome.replace(/\.(txt|zip)$/i,'').replace(/^Conversa do WhatsApp com /i,'');AUDIOS=audios;
     $('#de').value='';$('#ate').value='';render();recolherImportar();
-    Guarda.salvar({texto:TEXTO,nome:NOME,audios:AUDIOS}).then(()=>$('#apagar').classList.remove('oculto')).catch(()=>{});
+    if(!NOME)NOME='Obra sem nome';
+    Guarda.salvarObra({texto:TEXTO,nome:NOME,audios:AUDIOS}).then(()=>{$('#apagar').classList.remove('oculto');return Guarda.listarObras();}).then(n=>montarSeletor(n,NOME)).catch(()=>{});
   }catch(e){$('#nomeGrupo').textContent='Não consegui ler o arquivo: '+e.message;}
 }
 const drop=$('#drop');
@@ -95,7 +102,21 @@ drop.ondragover=e=>{e.preventDefault();drop.classList.add('on')};
 drop.ondragleave=()=>drop.classList.remove('on');
 drop.ondrop=e=>{e.preventDefault();drop.classList.remove('on');e.dataTransfer.files.length&&abrir(e.dataTransfer.files)};
 $('#aplicar').onclick=render;
-$('#apagar').onclick=()=>{if(confirm('Apagar a conversa guardada neste aparelho?'))Guarda.apagar().catch(()=>{}).finally(()=>location.reload());};
+$('#apagar').onclick=()=>{if(confirm(`Apagar a obra "${NOME}" deste aparelho?`))Guarda.apagarObra(NOME).catch(()=>{}).finally(()=>location.reload());};
+// --- lista de obras no topo ---
+function montarSeletor(nomes,atual){
+  const sel=$('#obraSel');
+  sel.innerHTML=nomes.map(n=>`<option value="${esc(n)}"${n===atual?' selected':''}>${esc(n)}</option>`).join('')+'<option value="__nova">+ Adicionar outra obra…</option>';
+  $('#obrasBar').classList.toggle('oculto',!nomes.length);
+}
+async function carregarObra(nome){
+  const d=await Guarda.lerObra(nome);if(!d)return;
+  TEXTO=d.texto;NOME=d.nome;AUDIOS=d.audios||{};ERRO_TRANSC='';
+  $('#de').value='';$('#ate').value='';render();recolherImportar();Guarda.definirAtual(nome).catch(()=>{});
+}
+$('#obraSel').onchange=e=>{const v=e.target.value;
+  if(v==='__nova'){e.target.value=NOME;$('#importar').open=true;$('#importarTit').classList.remove('oculto');$('#drop').scrollIntoView({behavior:'smooth',block:'center'});return;}
+  carregarObra(v).catch(()=>{});};
 $('#salvarChave').onclick=()=>{const v=$('#chave').value.trim();if(!v)return;Chave.salvar(v);$('#chave').value='';ERRO_TRANSC='';mostrarChave();render();};
 $('#tirarChave').onclick=()=>{Chave.salvar('');mostrarChave();render();};
 mostrarChave();
@@ -357,6 +378,12 @@ async function pegarCompartilhado(){
 }
 // Depois que tem conversa carregada, o quadro "Arraste aqui" fica recolhido (abre em "Trocar conversa, datas e filtros").
 function recolherImportar(){if(!TEXTO)return;$('#importarTit').classList.remove('oculto');$('#importar').open=false;}
-Guarda.ler().then(d=>{if(d&&d.texto){TEXTO=d.texto;NOME=d.nome||'';AUDIOS=d.audios||{};$('#apagar').classList.remove('oculto');recolherImportar();}})
-  .then(()=>Guarda.lerTranscricoes()).then(t=>{TRANSC=t||{};}).catch(()=>{})
-  .finally(()=>{render();pegarCompartilhado().catch(e=>{$('#nomeGrupo').textContent='Não consegui ler o arquivo compartilhado: '+e.message;});});
+(async()=>{try{
+  // migração: quem tinha só uma conversa guardada (versões antigas) passa a ter essa conversa como uma obra
+  const velha=await Guarda.ler();
+  if(velha&&velha.texto){await Guarda.salvarObra({texto:velha.texto,nome:velha.nome||'Obra sem nome',audios:velha.audios||{}});await Guarda.apagarAntiga();}
+  const nomes=await Guarda.listarObras();let atual=await Guarda.lerAtual();if(!nomes.includes(atual))atual=nomes[0];
+  if(atual){const d=await Guarda.lerObra(atual);if(d){TEXTO=d.texto;NOME=d.nome;AUDIOS=d.audios||{};$('#apagar').classList.remove('oculto');recolherImportar();}}
+  montarSeletor(nomes,atual);
+  TRANSC=(await Guarda.lerTranscricoes())||{};
+}catch(e){}})().finally(()=>{render();pegarCompartilhado().catch(e=>{$('#nomeGrupo').textContent='Não consegui ler o arquivo compartilhado: '+e.message;});});
