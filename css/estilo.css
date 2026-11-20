@@ -20,6 +20,10 @@ button.sec{background:transparent;color:var(--ac)}
 #importar[open]>summary{margin-bottom:12px}
 .drop{border:2px dashed var(--ln);border-radius:12px;padding:18px;text-align:center;color:var(--mut);cursor:pointer}
 .drop.on{border-color:var(--ac);background:var(--soft)}
+.faturamento{background:var(--card);border:1px solid var(--ln);border-left:5px solid var(--ouro);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.faturamento .l{font-size:13px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.faturamento .v{font-size:34px;font-weight:700;line-height:1.15;font-variant-numeric:tabular-nums}
+.faturamento .d{font-size:13px;color:var(--mut)}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .kpi{background:var(--card);border:1px solid var(--ln);border-left:3px solid var(--ac);border-radius:12px;padding:12px 14px}
 .kpi .v{font-size:24px;font-weight:700}
@@ -79,4 +83,5 @@ td.forte{font-weight:700}
   th,td{padding:9px 5px}
   .pc{display:none}
   .oc{grid-template-columns:1fr;gap:2px}
+  .faturamento .v{font-size:28px}
 }

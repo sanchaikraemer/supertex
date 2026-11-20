@@ -196,6 +196,7 @@ function render(){
   const termos=$('#obra').value.split(',').map(s=>s.trim()).filter(Boolean);
   const lim=+$('#limite').value||60;
   const R=Analise.analisar(TEXTO,termos);
+  $('#faturamento').classList.add('oculto');
   if(!R.msgs.length){$('#nomeGrupo').textContent=TEXTO?'Arquivo sem mensagens reconhecidas.':'Nenhuma conversa carregada ainda — arraste o arquivo exportado do grupo no quadro abaixo.';return;}
   const de=$('#de').value.replace(/-/g,''),ate=$('#ate').value.replace(/-/g,'');
   const dentro=ch=>(!de||ch>=de)&&(!ate||ch<=ate);
@@ -240,11 +241,11 @@ function render(){
   const tabelaGasto=()=>`<div class="scroll"><table><tr><th>Concreto</th><th class="n">Cargas</th><th class="n">m³</th><th class="n pc">R$/m³</th><th class="n">Valor</th></tr>
     ${porFck.map(g=>`<tr><td>${g.rotulo}</td><td class="n">${g.n}</td><td class="n">${fmt(g.vol)}</td><td class="n pc">${reais(g.preco)}</td><td class="n">${reais(g.valor)}</td></tr>`).join('')}
     ${temRegra?`<tr><td>Excedente (cargas abaixo de ${fmt(regra.min)} m³)</td><td class="n">${abaixo.length}</td><td class="n">${fmt(m3Falta)}</td><td class="n pc">${reais(regra.taxa)}</td><td class="n">${reais(taxaAbaixo)}</td></tr>`:''}
-    <tr class="destaque"><td>Gasto até agora</td><td class="n">${cargas.length}</td><td class="n">${fmt(vol)}</td><td class="n pc">${reais(vol?gasto/vol:0)}</td><td class="n">${reais(gasto)}</td></tr></table></div>`;
+    <tr class="destaque"><td>Faturamento total</td><td class="n">${cargas.length}</td><td class="n">${fmt(vol)}</td><td class="n pc">${reais(vol?gasto/vol:0)}</td><td class="n">${reais(gasto)}</td></tr></table></div>`;
   if(temValor){
     $('#custosConversa').innerHTML=`<p style="margin:0 0 8px;font-weight:600">Compra de ${dias[0]?.data.slice(0,5)||'—'} a ${dias[dias.length-1]?.data.slice(0,5)||'—'}: ${fmt(vol)} m³ em ${cargas.length} cargas</p>
     <div class="kpis" style="margin-bottom:6px">
-      <div class="kpi"><div class="v">${reais(gasto)}</div><div class="l">Gasto até agora (concreto + excedente)</div></div>
+      <div class="kpi"><div class="v">${reais(gasto)}</div><div class="l">Faturamento total (concreto + excedente)</div></div>
       ${temRegra?`<div class="kpi"><div class="v">${reais(taxaAbaixo)}</div><div class="l">Excedente: ${abaixo.length} de ${cargas.length} cargas abaixo de ${fmt(regra.min)} m³ (faltaram ${fmt(m3Falta)} m³)</div></div>`:''}
       <div class="kpi"><div class="v">${reais(gasto/vol)}</div><div class="l">Quanto saiu o m³ (com o excedente)</div></div>
     </div>`;
@@ -259,16 +260,20 @@ function render(){
    resumoHTML=`<div class="resumo-obra"><h2>Resumo</h2><ul>
      <li><b>${fmt(vol)} m³</b> em <b>${cargas.length} cargas</b> · ${diasConc.length} dias com concretagem (${dias[0]?.data.slice(0,5)||'—'} a ${dias[dias.length-1]?.data.slice(0,5)||'—'})</li>
      <li>Espera média <b>${duracao(media)}</b> · <b>${atras.length}</b> carga(s) acima de ${lim} min${maior?` · maior <b>${duracao(maior.espera)}</b> (${maior.data.slice(0,5)})`:''}</li>
-     ${temValor?`<li>Gasto até agora <b>${reais(gasto)}</b> (${reais(gasto/vol)}/m³): concreto ${reais(valorConc)}${temRegra?` + excedente ${reais(taxaAbaixo)}`:''}</li>`:''}
+     ${temValor?`<li>Faturamento total <b>${reais(gasto)}</b> (${reais(gasto/vol)}/m³): concreto ${reais(valorConc)}${temRegra?` + excedente ${reais(taxaAbaixo)}`:''}</li>`:''}
      ${temRegra?`<li><b>${abaixo.length} de ${cargas.length}</b> cargas abaixo de ${fmt(regra.min)} m³.${economia>0?` Pedindo caminhões de ${fmt(regra.min)} m³, o excedente cairia para ${reais(taxaIdeal)}: <b>economia de ${reais(economia)}</b>.`:abaixo.length?' Cada dia já usou o mínimo de caminhões possível; o excedente vem do volume do dia não fechar em múltiplos de '+fmt(regra.min)+' m³.':''}</li>`:''}
      ${conferir.length?`<li>Conferir: ${conferir.join(' · ')}</li>`:''}
    </ul></div>`;}
+  // Faturamento total em destaque, acima dos números
+  $('#faturamento').classList.toggle('oculto',!temValor);
+  if(temValor)$('#faturamento').innerHTML=`<div class="l">Faturamento total</div><div class="v">${reais(gasto)}</div>
+    <div class="d">${fmt(vol)} m³ em ${cargas.length} cargas · concreto ${reais(valorConc)}${temRegra?` + excedente ${reais(taxaAbaixo)}`:''} · ${reais(gasto/vol)}/m³</div>`;
   $('#kpis').innerHTML=[
     [fmt(vol)+' m³','Concreto entregue'],[cargas.length,'Cargas (caminhões)'],[diasConc.length,'Dias com concretagem'],
     [duracao(media),'Espera média pedido → saída'],[atras.length,'Cargas com espera > '+lim+' min'],[maior?duracao(maior.espera):'—','Maior espera'+(maior?' ('+maior.data.slice(0,5)+')':'')],
     ...(temValor?[[reais(valorConc),`Valor do concreto (${fmt(vol)} m³ pelo fck de cada carga${semFck?`; ${semFck} sem fck: preço médio`:''})`]]:[]),
     ...(temRegra?[[reais(taxaAbaixo),`Excedente: ${fmt(m3Falta)} m³ faltantes em ${abaixo.length} carga(s) abaixo de ${fmt(regra.min)} m³`]]:[]),
-    ...(temValor?[[reais(gasto),`Gasto até agora (concreto${temRegra?' + excedente':''})`],[reais(gasto/vol),`Valor médio do m³${temRegra?' com excedente':''}`]]:[])
+    ...(temValor?[[reais(gasto/vol),`Valor médio do m³${temRegra?' com excedente':''}`]]:[])
   ].map(([v,l])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
 
   // ---------- RELATÓRIO ----------
@@ -296,7 +301,7 @@ function render(){
     ...(linhasAtr.length?['',`ESPERAS ACIMA DE ${lim} MIN`,...linhasAtr]:[]),
     ...(naoAt.length?['','PEDIDOS NÃO ENVIADOS (cancelados/segurados pela obra)',...naoAt.map(p=>`• ${p.data.slice(0,5)} ${p.hora} – ${fmt(p.vol)} m³`)]:[]),
     ...(abaixo.length?['',`CARGAS ABAIXO DE ${fmt(regra.min)} m³ (taxa do contrato)`,`• ${abaixo.length} carga(s), faltaram ${fmt(m3Falta)} m³ no total – taxa estimada ${reais(taxaAbaixo)}`]:[]),
-    ...(temValor?['','GASTO ATÉ AGORA (preços do contrato)',
+    ...(temValor?['','FATURAMENTO TOTAL (preços do contrato)',
       ...porFck.map(g=>`• ${g.rotulo}: ${g.n} carga(s), ${fmt(g.vol)} m³ × ${reais(g.preco)} = ${reais(g.valor)}`),
       ...(temRegra?[`• Excedente: ${fmt(m3Falta)} m³ faltantes em ${abaixo.length} carga(s) abaixo de ${fmt(regra.min)} m³ × ${reais(regra.taxa)} = ${reais(taxaAbaixo)}`]:[]),
       `• TOTAL: ${reais(gasto)} (${reais(gasto/vol)} por m³)`]:[]),
@@ -310,7 +315,7 @@ function render(){
       <div style="margin-top:8px;display:flex;gap:8px;align-items:center"><button id="copiar">Copiar texto</button><span id="okc" class="leg"></span></div></div>
       <div><h2>m³ por dia</h2><div class="barras">${diasConc.map(d=>{const v=d.cargas.reduce((s,c)=>s+c.vol,0);
         return `<div class="br"><span>${d.data.slice(0,5)} ${semana(d.chave)}</span><div class="f" style="width:${v/porDiaMax*100}%"></div><span>${fmt(v)} m³</span></div>`}).join('')}</div>
-      ${temValor?`<h2 style="margin-top:20px">Gasto até agora</h2>${tabelaGasto()}`:''}
+      ${temValor?`<h2 style="margin-top:20px">Faturamento total</h2>${tabelaGasto()}`:''}
       <h2 style="margin-top:20px">Quem mais falou no grupo</h2>
       <table>${Object.entries(R.participantes).sort((a,b)=>b[1]-a[1]).map(([q,n])=>`<tr><td>${esc(q)} ${termos.some(t=>q.toLowerCase().includes(t.toLowerCase()))?'<span class="tag t-mut">obra</span>':''}</td><td class="n">${n}</td></tr>`).join('')}</table></div>
     </div>`;
