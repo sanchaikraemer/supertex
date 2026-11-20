@@ -196,7 +196,7 @@ function render(){
   const termos=$('#obra').value.split(',').map(s=>s.trim()).filter(Boolean);
   const lim=+$('#limite').value||60;
   const R=Analise.analisar(TEXTO,termos);
-  $('#faturamento').classList.add('oculto');
+  $('#numeros').classList.add('oculto');
   if(!R.msgs.length){$('#nomeGrupo').textContent=TEXTO?'Arquivo sem mensagens reconhecidas.':'Nenhuma conversa carregada ainda — arraste o arquivo exportado do grupo no quadro abaixo.';return;}
   const de=$('#de').value.replace(/-/g,''),ate=$('#ate').value.replace(/-/g,'');
   const dentro=ch=>(!de||ch>=de)&&(!ate||ch<=ate);
@@ -265,16 +265,19 @@ function render(){
      ${conferir.length?`<li>Conferir: ${conferir.join(' · ')}</li>`:''}
    </ul></div>`;}
   // Faturamento total em destaque, acima dos números
-  $('#faturamento').classList.toggle('oculto',!temValor);
   if(temValor)$('#faturamento').innerHTML=`<div class="l">Faturamento total</div><div class="v">${reais(gasto)}</div>
     <div class="d">${fmt(vol)} m³ em ${cargas.length} cargas · concreto ${reais(valorConc)}${temRegra?` + excedente ${reais(taxaAbaixo)}`:''} · ${reais(gasto/vol)}/m³</div>`;
-  $('#kpis').innerHTML=[
-    [fmt(vol)+' m³','Concreto entregue'],[cargas.length,'Cargas (caminhões)'],[diasConc.length,'Dias com concretagem'],
-    [duracao(media),'Espera média pedido → saída'],[atras.length,'Cargas com espera > '+lim+' min'],[maior?duracao(maior.espera):'—','Maior espera'+(maior?' ('+maior.data.slice(0,5)+')':'')],
+  // Números agrupados como no site: Custos (com o faturamento em destaque), Entregas e Prazos
+  const kpi=([v,l])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`;
+  $('#kEntregas').innerHTML=[[fmt(vol)+' m³','Concreto entregue'],[cargas.length,'Cargas (caminhões)'],[diasConc.length,'Dias com concretagem']].map(kpi).join('');
+  $('#kPrazos').innerHTML=[[duracao(media),'Espera média pedido → saída'],[atras.length,'Cargas com espera > '+lim+' min'],[maior?duracao(maior.espera):'—','Maior espera'+(maior?' ('+maior.data.slice(0,5)+')':'')]].map(kpi).join('');
+  $('#kCustos').innerHTML=[
     ...(temValor?[[reais(valorConc),`Valor do concreto (${fmt(vol)} m³ pelo fck de cada carga${semFck?`; ${semFck} sem fck: preço médio`:''})`]]:[]),
     ...(temRegra?[[reais(taxaAbaixo),`Excedente: ${fmt(m3Falta)} m³ faltantes em ${abaixo.length} carga(s) abaixo de ${fmt(regra.min)} m³`]]:[]),
     ...(temValor?[[reais(gasto/vol),`Valor médio do m³${temRegra?' com excedente':''}`]]:[])
-  ].map(([v,l])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div></div>`).join('');
+  ].map(kpi).join('');
+  $('#secCustos').classList.toggle('oculto',!temValor);
+  $('#numeros').classList.remove('oculto');
 
   // ---------- RELATÓRIO ----------
   const linhasDia=diasConc.map(d=>{

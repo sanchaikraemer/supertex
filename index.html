@@ -6,18 +6,18 @@
 <title>Acompanhamento da Concreteira</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="manifest" href="manifest.webmanifest?v=0021">
+<link rel="manifest" href="manifest.webmanifest?v=0022">
 <link rel="icon" href="icones/icone-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icones/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="Concreteira">
-<link rel="stylesheet" href="css/tema.css?v=0021">
-<link rel="stylesheet" href="css/estilo.css?v=0021">
+<link rel="stylesheet" href="css/tema.css?v=0022">
+<link rel="stylesheet" href="css/estilo.css?v=0022">
 </head>
 <body>
 <header class="cab">
   <div class="cab-in">
     <img src="icones/logo-supertex.png" alt="Supertex" class="cab-logo">
-    <h1>Acompanhamento da Concreteira<small>Painel da obra · Construtora Senger · versão 0021</small></h1>
+    <h1>Acompanhamento da Concreteira<small>Painel da obra · Construtora Senger · versão 0022</small></h1>
     <button id="instalar" class="sec oculto">Instalar app</button>
   </div>
 </header>
@@ -70,8 +70,17 @@
    </details>
   </div>
 
-  <div class="faturamento oculto" id="faturamento"></div>
-  <div class="kpis" id="kpis"></div>
+  <div id="numeros" class="oculto">
+    <div class="secao" id="secCustos">
+      <p class="olho">Custos</p>
+      <div class="faturamento" id="faturamento"></div>
+      <div class="g3" id="kCustos"></div>
+    </div>
+    <div class="dupla">
+      <div class="secao"><p class="olho">Entregas</p><div class="g3" id="kEntregas"></div></div>
+      <div class="secao"><p class="olho">Prazos</p><div class="g3" id="kPrazos"></div></div>
+    </div>
+  </div>
 
   <div class="card" style="margin-top:16px">
     <div class="abas" id="abas">
@@ -113,8 +122,8 @@
   <p class="leg">Espera = hora que a obra pediu a carga → hora que o caminhão saiu da usina (anunciado no grupo). Com a chave da OpenAI salva, os áudios são transcritos sozinhos e aparecem nas Ocorrências; fotos não são lidas.</p>
 </div>
 
-<script src="js/analise.js?v=0021"></script>
-<script src="js/tela.js?v=0021"></script>
-<script src="js/app.js?v=0021"></script>
+<script src="js/analise.js?v=0022"></script>
+<script src="js/tela.js?v=0022"></script>
+<script src="js/app.js?v=0022"></script>
 </body>
 </html>
